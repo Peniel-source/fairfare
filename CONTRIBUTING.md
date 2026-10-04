@@ -28,6 +28,8 @@ Use `type/short-description` in lowercase with hyphens.
 | `fix/` | Bug fixes | `fix/otp-autofill` |
 | `docs/` | Documentation only | `docs/update-readme` |
 | `test/` | Adding or fixing tests | `test/corridor-widget-tests` |
+| `chore/` | Setup, dependencies, config | `chore/add-dio` |
+| `ci/` | Build and check workflows | `ci/enable-backend-checks` |
 
 ## Commit messages
 
@@ -38,6 +40,8 @@ feat: add price stepper widget
 fix: prevent OTP boxes losing focus on paste
 docs: update branch workflow in README
 test: add widget tests for corridor card
+chore: add riverpod dependency
+ci: enable backend lint and test checks
 ```
 
 Keep the summary under about 70 characters. Commit small and often.
@@ -70,17 +74,50 @@ Keep the summary under about 70 characters. Commit small and often.
 
 ## Before opening a PR
 
+Run the following commands. If you don't run them, CI will fail in your face
+
 ```bash
-cd app
+# Flutter app
+cd app   #or find your way into the app directory
 flutter analyze
 flutter test
-```
 
-Both must pass. CI runs the same checks and will block the merge if they fail.
+# Backend
+cd backend #or find your way into the backend directory
+npm run build
+npm run lint
+npm test
+```
 
 ## Releases
 
 When `dev` is stable at the end of a sprint or before a demo, open a PR from `dev` into `main`. It needs 2 approvals.
+
+## First-time setup
+
+You need: Git, Flutter (stable channel), and Node.js **22.18 or newer** (check with `node -v`). Run `flutter doctor` to check your Flutter setup.
+
+### Flutter app
+
+```bash
+cd app
+flutter pub get
+flutter run
+```
+
+### Backend
+
+```bash
+cd backend
+npm ci
+```
+
+please use `npm ci`, not `npm install`. It installs the exact versions in `package-lock.json`, so everyone has identical packages.
+
+Create `backend/.env` and put the credentials there.  
+Then check that everything builds: `npx prisma contract emit && npm run build`.
+
+
 
 ## Need help?
 

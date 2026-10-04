@@ -16,11 +16,10 @@ Only required if the UI changed. Before/after if relevant.
 ## Checklist
 
 - [ ] Loading, empty, and error states are handled
-- [ ] No hardcoded colors, font sizes, or corner radii (they live in `core/theme/` or `shared/`)
-- [ ] `flutter analyze` passes
-- [ ] `flutter test` passes
-- [ ] Follows the folder structure in the roadmap
-- [ ] Any divergence from the mockup is flagged below
+- [ ] No hardcoded colors, font sizes, or corner radii
+- [ ] `flutter analyze` and `flutter test` pass
+- [ ] Backend: `npm run build`, `npm run lint`, and `npm test` pass
+- [ ] Schema change: migration folder and contract files are committed
 - [ ] No secrets or credentials committed
 
 ## Notes for reviewers
