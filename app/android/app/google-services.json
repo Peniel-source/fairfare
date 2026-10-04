@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "847168901749",
+    "project_id": "fairfare-353cd",
+    "storage_bucket": "fairfare-353cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847168901749:android:373ef4ad089292d8aa1e3c",
+        "android_client_info": {
+          "package_name": "com.fairfare.fairfare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY7GFnKN_8GUKf40uR3ObKLYAWeK6gqLA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
