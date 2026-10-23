@@ -8,7 +8,6 @@ import { WalletModule } from './wallet/wallet.module.js';
 import { TrustModule } from './trust/trust.module.js';
 import { EngagementModule } from './engagement/engagement.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
-import { PrismaModule } from './prisma/prisma.module.js';
 import { FirebaseModule } from './firebase/firebase.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -23,7 +22,6 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     TrustModule,
     EngagementModule,
     PaymentsModule,
-    PrismaModule,
     FirebaseModule,
   ],
 })
