@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
 
 void main() async {
@@ -15,8 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fair Fare',
-      theme: ThemeData(
-      ),
+      theme: ThemeData(),
       home: const MyHomePage(title: 'Fair Fare Home Page'),
     );
   }
@@ -35,4 +35,3 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
-

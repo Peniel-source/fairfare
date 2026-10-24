@@ -5,3 +5,16 @@
 .env
 *.env
 .env.*
+
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Test coverage
+coverage/
+lcov.info
+
+# Firebase service account keys
+*serviceAccount*.json
+*firebase-adminsdk*.json
