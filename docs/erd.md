@@ -1,23 +1,6 @@
-# FairFare ERD — B1
+# FairFare ERD and Firestore model
 
-Owner: Ménès (B). For team review, October 25, 2026.
-
-Open [erd.png](erd.png) for the image or [erd.svg](erd.svg) for a zoomable version. The editable source is [erd.mmd](erd.mmd); GitHub also renders it below.
-
-## Reading the diagram
-
-- A box is an entity, mapped to a Firestore collection or subcollection in the data model.
-- `PK` is the document's path key. `FK` is a related document's ID or an ownership path; these are logical relationships, not SQL constraints.
-- `||` means exactly one, `o|` means zero or one, and `o{` means zero or many. For example, one rider owns zero or many saved routes.
-- `documentId` and the saved-route `ownerUid` are **path metadata, not stored body fields**. A saved route's full key includes its parent rider path.
-- Reports with no rider are server-only seed prices. App reports always have an owner.
-- No relationship line is drawn from notarizations to individual riders/reports: stamps cover an aggregate snapshot. The shared pool is a singleton, not a rider-owned document.
-
-See [the complete field and permission tables](firestore_data_model.md) for nullable fields, enum values, and collection paths. Review [the proposed changes and open decisions](b1_review.md) before adopting them.
-
-Exports use Mermaid CLI 12.0.0, neutral theme, size 3600, and PNG scale 2.
-
-## Complete field diagram
+B1 database design. The diagram shows document fields and relationships; the table below maps each entity to its Firestore path and access permissions.
 
 ```mermaid
 erDiagram
@@ -136,3 +119,33 @@ erDiagram
         timestamp createdAt
     }
 ```
+
+![FairFare entity relationship diagram](erd.png)
+
+## Firestore mapping
+
+| Entity | Document path / ID | App access | Server writes |
+|---|---|---|---|
+| Rider | `riders/{uid}`; Firebase Auth UID | Owner reads; creates `displayName`, `email`, `createdAt`; edits display name | `trustScore`, `streak`, `badges`, `verifiedCount`, `lastReportDate`; reserved optional phone |
+| Saved route | `riders/{uid}/savedRoutes/{routeId}`; auto ID | Owner creates, reads, edits, deletes | None required |
+| Corridor | `corridors/{corridorId}`; directional area slug | Public read | All fields |
+| Corridor statistics | `corridorStats/{corridorId}`; same ID as corridor | Public read | All fields |
+| Report | `reports/{reportId}`; auto ID, fixed for seeds | Owner reads; creates pending; edits price or deletes while pending | Status changes, `reason`, `verifiedAt`, seed records |
+| Wallet | `wallets/{uid}`; rider UID | Owner read | All fields |
+| Wallet entry | `walletEntries/{reportId}`; rewarded report ID (proposed) | Owner read | All fields |
+| Cash-out request | `cashOutRequests/{requestId}`; auto ID | Owner reads and creates pending requests | Status changes |
+| Subscription | `subscriptions/{reference}`; payment reference | Owner reads and creates pending requests | Status, `startsAt`, `endsAt` |
+| Leaderboard entry | `leaderboard/{uid}`; rider UID (proposed) | Public read | Name and score projection |
+| Pool ledger | `poolLedger/main` (proposed) | No client access | All fields |
+| Notarization | `notarizations/{notarizationId}`; auto ID | Public read | All fields |
+
+## Field conventions
+
+- `PK` identifies a document; `FK` identifies a related document. `documentId` and the saved-route `ownerUid` describe path metadata and are not stored fields. Firestore relationships are enforced by rules/server logic, not SQL foreign keys.
+- Dates use Firestore Timestamps. Prices and subscription amounts are whole RWF; wallet values are whole demo points. Passwords and email verification state stay in Firebase Auth.
+- Server profile defaults are score/streak/count `0`, badges `[]`, and `lastReportDate` null; they may be absent just after signup. `phone` is optional. `reason`, `verifiedAt`, `startsAt`, and `endsAt` may be absent or null until set by the server. An absent report `isSeeded` means false.
+- Time segments: `morning`, `midday`, `evening`, `lateNight`. Weather: `clear`, `heavyRain`. Report status: `pending`, `verified`, `rejected`, `expired`. Subscription status: `pending`, `active`, `rejected`. Cash-out status: `pending`, `paid`, `rejected`. Proposed wallet states: `pending`, `finalized`, `reversed`.
+- Proposed confidence labels: `new`, `limited`, `wellCovered`. Proposed cash-out methods: `momo`, `airtel`. Proposed badge IDs: `corridorPioneer`, `weekStreak`, `tenVerified`.
+- Proposed seed reports have `isSeeded: true` and no rider. They contribute prices to statistics, but do not corroborate reports or earn rewards/trust. Public leaderboard documents contain only names and scores; private emails stay in rider documents. Corridor statistics are a derived summary of report prices.
+
+Composite query indexes are defined in [firestore.indexes.json](../firestore.indexes.json). Schema proposals remain subject to team review; security rules and emulator tests are B2.
