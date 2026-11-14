@@ -8,8 +8,6 @@ jobs:
   check:
     name: Backend lint and test
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://user:pass@localhost:5432/db
     defaults:
       run:
         working-directory: backend

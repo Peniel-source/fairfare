@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { createObserveModule } from '@nestjs/observe';
-import { AuthModule } from './auth/auth.module.js';
+import { AppController } from './app.controller.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { CorridorsModule } from './corridors/corridors.module.js';
 import { WalletModule } from './wallet/wallet.module.js';
@@ -15,14 +16,15 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    AuthModule,
+    EventEmitterModule.forRoot(),
+    FirebaseModule,
     ReportsModule,
     CorridorsModule,
     WalletModule,
     TrustModule,
     EngagementModule,
     PaymentsModule,
-    FirebaseModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
