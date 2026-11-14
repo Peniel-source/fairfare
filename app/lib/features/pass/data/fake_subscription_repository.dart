@@ -9,12 +9,11 @@ class FakeSubscriptionRepository implements SubscriptionRepository {
   final _controller = StreamController<Subscription?>.broadcast();
   Subscription? _subscription;
 
-  FakeSubscriptionRepository() {
-    _controller.add(null);
-  }
-
   @override
-  Stream<Subscription?> watchMine() => _controller.stream;
+  Stream<Subscription?> watchMine() async* {
+    yield _subscription;
+    yield* _controller.stream;
+  }
 
   @override
   Future<void> submitReference(String reference, int amount) async {

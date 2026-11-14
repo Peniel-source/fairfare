@@ -1,4 +1,4 @@
-// A rider's Pass subscription.
+// A passenger's Pass subscription.
 import '../../../report/domain/entities/report_enums.dart';
 
 class Subscription {

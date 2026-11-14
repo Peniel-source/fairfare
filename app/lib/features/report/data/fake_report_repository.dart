@@ -11,7 +11,7 @@ class FakeReportRepository implements ReportRepository {
   final _reports = <Report>[
     Report(
       id: 'r1',
-      riderId: 'fake_user_1',
+      passengerId: 'fake_user_1',
       corridorId: 'c1',
       price: 600,
       timeSegment: TimeSegment.morning,
@@ -22,7 +22,7 @@ class FakeReportRepository implements ReportRepository {
     ),
     Report(
       id: 'r2',
-      riderId: 'fake_user_1',
+      passengerId: 'fake_user_1',
       corridorId: 'c2',
       price: 500,
       timeSegment: TimeSegment.evening,
@@ -32,19 +32,18 @@ class FakeReportRepository implements ReportRepository {
     ),
   ];
 
-  FakeReportRepository() {
-    _controller.add(_reports);
-  }
-
   @override
-  Stream<List<Report>> watchMine() => _controller.stream;
+  Stream<List<Report>> watchMine() async* {
+    yield List.unmodifiable(_reports);
+    yield* _controller.stream;
+  }
 
   @override
   Future<void> submit(NewReport report) async {
     await Future.delayed(const Duration(milliseconds: 300));
     final newReport = Report(
       id: 'r_${DateTime.now().millisecondsSinceEpoch}',
-      riderId: 'fake_user_1',
+      passengerId: 'fake_user_1',
       corridorId: report.corridorId,
       price: report.price,
       timeSegment: report.timeSegment,
@@ -53,7 +52,7 @@ class FakeReportRepository implements ReportRepository {
       createdAt: DateTime.now(),
     );
     _reports.insert(0, newReport);
-    _controller.add(_reports);
+    _controller.add(List.unmodifiable(_reports));
   }
 
   @override
@@ -63,7 +62,7 @@ class FakeReportRepository implements ReportRepository {
     if (index != -1 && _reports[index].status == ReportStatus.pending) {
       _reports[index] = Report(
         id: _reports[index].id,
-        riderId: _reports[index].riderId,
+        passengerId: _reports[index].passengerId,
         corridorId: _reports[index].corridorId,
         price: price,
         timeSegment: _reports[index].timeSegment,
@@ -71,7 +70,7 @@ class FakeReportRepository implements ReportRepository {
         status: _reports[index].status,
         createdAt: _reports[index].createdAt,
       );
-      _controller.add(_reports);
+      _controller.add(List.unmodifiable(_reports));
     }
   }
 
@@ -81,7 +80,7 @@ class FakeReportRepository implements ReportRepository {
     _reports.removeWhere(
       (r) => r.id == reportId && r.status == ReportStatus.pending,
     );
-    _controller.add(_reports);
+    _controller.add(List.unmodifiable(_reports));
   }
 
   void dispose() => _controller.close();

@@ -44,21 +44,23 @@ class FakeWalletRepository implements WalletRepository {
     ),
   ];
 
-  FakeWalletRepository() {
-    _walletController.add(_wallet);
-    _entriesController.add(_entries);
-    _cashOutController.add(_cashOutRequests);
+  @override
+  Stream<Wallet> watchWallet() async* {
+    yield _wallet;
+    yield* _walletController.stream;
   }
 
   @override
-  Stream<Wallet> watchWallet() => _walletController.stream;
+  Stream<List<WalletEntry>> watchEntries() async* {
+    yield List.unmodifiable(_entries);
+    yield* _entriesController.stream;
+  }
 
   @override
-  Stream<List<WalletEntry>> watchEntries() => _entriesController.stream;
-
-  @override
-  Stream<List<CashOutRequest>> watchCashOutRequests() =>
-      _cashOutController.stream;
+  Stream<List<CashOutRequest>> watchCashOutRequests() async* {
+    yield List.unmodifiable(_cashOutRequests);
+    yield* _cashOutController.stream;
+  }
 
   @override
   Future<void> requestCashOut(int amount, String method) async {
@@ -71,7 +73,7 @@ class FakeWalletRepository implements WalletRepository {
       createdAt: DateTime.now(),
     );
     _cashOutRequests.insert(0, request);
-    _cashOutController.add(_cashOutRequests);
+    _cashOutController.add(List.unmodifiable(_cashOutRequests));
   }
 
   void dispose() {

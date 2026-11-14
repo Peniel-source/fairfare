@@ -1,4 +1,4 @@
-// A rider's request to cash out reward points.
+// A passenger's request to cash out reward points.
 import '../../../report/domain/entities/report_enums.dart';
 
 class CashOutRequest {

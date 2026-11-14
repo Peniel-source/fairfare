@@ -1,4 +1,4 @@
-// A new report being submitted by a rider.
+// A new report being submitted by a passenger.
 import 'report_enums.dart';
 
 class NewReport {

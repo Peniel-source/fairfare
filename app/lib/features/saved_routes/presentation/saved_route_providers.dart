@@ -18,7 +18,7 @@ final savedRouteRepositoryProvider = Provider<SavedRouteRepository>((ref) {
   throw UnimplementedError('SavedRouteRepositoryImpl not yet implemented');
 });
 
-/// Stream of all saved routes for the current rider.
+/// Stream of all saved routes for the current passenger.
 final savedRoutesProvider = StreamProvider<List<SavedRoute>>((ref) {
   return ref.watch(savedRouteRepositoryProvider).watchAll();
 });

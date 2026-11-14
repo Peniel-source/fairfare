@@ -1,4 +1,4 @@
-/// Rider's wallet balances.
+/// Passenger's wallet balances.
 class Wallet {
   final int pendingBalance;
   final int finalizedBalance;

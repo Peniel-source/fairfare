@@ -6,8 +6,6 @@ import '../domain/entities/corridor_stats.dart';
 import '../domain/repositories/corridor_repository.dart';
 
 class FakeCorridorRepository implements CorridorRepository {
-  final _statsController = StreamController<CorridorStats?>.broadcast();
-
   static const _sampleCorridors = [
     Corridor(id: 'c1', fromArea: 'Kacyiru', toArea: 'Kimironko'),
     Corridor(id: 'c2', fromArea: 'Kigali', toArea: 'Nyarugenge'),
@@ -27,12 +25,9 @@ class FakeCorridorRepository implements CorridorRepository {
   );
 
   @override
-  Stream<CorridorStats?> watchStats(String corridorId) {
-    final controller = StreamController<CorridorStats?>.broadcast();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      controller.add(corridorId == 'c1' ? _sampleStats : null);
-    });
-    return controller.stream;
+  Stream<CorridorStats?> watchStats(String corridorId) async* {
+    await Future.delayed(const Duration(milliseconds: 300));
+    yield corridorId == 'c1' ? _sampleStats : null;
   }
 
   @override
@@ -50,6 +45,4 @@ class FakeCorridorRepository implements CorridorRepository {
     await Future.delayed(const Duration(milliseconds: 200));
     return _sampleCorridors;
   }
-
-  void dispose() => _statsController.close();
 }

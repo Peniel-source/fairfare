@@ -7,8 +7,14 @@ import '../domain/repositories/auth_repository.dart';
 class FakeAuthRepository implements AuthRepository {
   AuthUser? _currentUser;
 
+  /// Emits the current user first (like FirebaseAuth does), then every change,
+  /// so the router never waits forever on a stream that has not fired yet.
   @override
-  Stream<AuthUser?> authStateChanges() => _controller.stream;
+  Stream<AuthUser?> authStateChanges() async* {
+    yield _currentUser;
+    yield* _controller.stream;
+  }
+
   final _controller = StreamController<AuthUser?>.broadcast();
 
   @override
@@ -33,7 +39,7 @@ class FakeAuthRepository implements AuthRepository {
     _currentUser = AuthUser(
       id: 'fake_user_1',
       email: email,
-      displayName: 'Test Rider',
+      displayName: 'Test Passenger',
       emailVerified: true,
     );
     _controller.add(_currentUser);
@@ -44,8 +50,8 @@ class FakeAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 300));
     _currentUser = AuthUser(
       id: 'fake_google_1',
-      email: 'rider@gmail.com',
-      displayName: 'Google Rider',
+      email: 'passenger@example.com',
+      displayName: 'Google Passenger',
       emailVerified: true,
     );
     _controller.add(_currentUser);

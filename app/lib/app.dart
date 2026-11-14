@@ -19,7 +19,7 @@ class FairFareApp extends ConsumerWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      routerConfig: appRouter,
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }

@@ -1,85 +1,55 @@
 // Fake profile repository with sample data.
 import 'dart:async';
 
-import '../domain/entities/rider.dart';
+import '../domain/entities/leaderboard_entry.dart';
+import '../domain/entities/passenger.dart';
 import '../domain/repositories/profile_repository.dart';
 
 class FakeProfileRepository implements ProfileRepository {
-  final _meController = StreamController<Rider>.broadcast();
-  final _leaderboardController = StreamController<List<Rider>>.broadcast();
+  final _meController = StreamController<Passenger>.broadcast();
 
-  Rider _rider = const Rider(
+  Passenger _passenger = Passenger(
     id: 'fake_user_1',
-    displayName: 'Test Rider',
+    displayName: 'Test Passenger',
     email: 'test@example.com',
     trustScore: 15,
     streak: 3,
-    badges: ['Corridor Pioneer'],
+    badges: const ['Corridor Pioneer'],
+    verifiedCount: 4,
+    lastReportDate: DateTime(2026, 11, 13),
   );
 
-  final _leaderboard = const <Rider>[
-    Rider(
-      id: 'u1',
-      displayName: 'Alice',
-      email: 'a@e.com',
-      trustScore: 85,
-      streak: 10,
-      badges: ['Ten Verified', 'Week Streak'],
-    ),
-    Rider(
-      id: 'u2',
-      displayName: 'Bob',
-      email: 'b@e.com',
-      trustScore: 72,
-      streak: 7,
-      badges: ['Week Streak'],
-    ),
-    Rider(
-      id: 'u3',
-      displayName: 'Charlie',
-      email: 'c@e.com',
-      trustScore: 60,
-      streak: 5,
-      badges: ['Corridor Pioneer'],
-    ),
-    Rider(
-      id: 'u4',
-      displayName: 'Diana',
-      email: 'd@e.com',
-      trustScore: 50,
-      streak: 4,
-      badges: ['Corridor Pioneer'],
-    ),
-    Rider(
-      id: 'u5',
-      displayName: 'Eve',
-      email: 'e@e.com',
-      trustScore: 40,
-      streak: 3,
-      badges: [],
+  static const _leaderboard = <LeaderboardEntry>[
+    LeaderboardEntry(id: 'u1', displayName: 'Alice', trustScore: 85),
+    LeaderboardEntry(id: 'u2', displayName: 'Bob', trustScore: 72),
+    LeaderboardEntry(id: 'u3', displayName: 'Charlie', trustScore: 60),
+    LeaderboardEntry(id: 'u4', displayName: 'Diana', trustScore: 50),
+    LeaderboardEntry(id: 'u5', displayName: 'Eve', trustScore: 40),
+    LeaderboardEntry(
+      id: 'fake_user_1',
+      displayName: 'Test Passenger',
+      trustScore: 15,
     ),
   ];
 
-  FakeProfileRepository() {
-    _meController.add(_rider);
-    _leaderboardController.add(_leaderboard);
+  /// Emits the current passenger first, then every change.
+  @override
+  Stream<Passenger> watchMe() async* {
+    yield _passenger;
+    yield* _meController.stream;
   }
 
   @override
-  Stream<Rider> watchMe() => _meController.stream;
-
-  @override
-  Stream<List<Rider>> watchLeaderboard() => _leaderboardController.stream;
+  Stream<List<LeaderboardEntry>> watchLeaderboard() async* {
+    yield _leaderboard;
+  }
 
   @override
   Future<void> updateDisplayName(String name) async {
     await Future.delayed(const Duration(milliseconds: 200));
-    _rider = _rider.copyWith(displayName: name);
-    _meController.add(_rider);
+    _passenger = _passenger.copyWith(displayName: name);
+    _meController.add(_passenger);
   }
 
-  void dispose() {
-    _meController.close();
-    _leaderboardController.close();
-  }
+  void dispose() => _meController.close();
 }

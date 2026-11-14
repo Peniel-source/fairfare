@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../data/fake_profile_repository.dart';
-import '../domain/entities/rider.dart';
+import '../domain/entities/leaderboard_entry.dart';
+import '../domain/entities/passenger.dart';
 import '../domain/repositories/profile_repository.dart';
 import '../domain/usecases/update_display_name.dart';
 
@@ -16,13 +17,13 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   throw UnimplementedError('ProfileRepositoryImpl not yet implemented');
 });
 
-/// Stream of the current rider's profile.
-final meProvider = StreamProvider<Rider>((ref) {
+/// Stream of the current passenger's profile.
+final meProvider = StreamProvider<Passenger>((ref) {
   return ref.watch(profileRepositoryProvider).watchMe();
 });
 
-/// Stream of the leaderboard (top riders).
-final leaderboardProvider = StreamProvider<List<Rider>>((ref) {
+/// Stream of the leaderboard (top passengers).
+final leaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   return ref.watch(profileRepositoryProvider).watchLeaderboard();
 });
 

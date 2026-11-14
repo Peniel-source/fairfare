@@ -1,9 +1,9 @@
-// A price report from a rider on a corridor.
+// A price report from a passenger on a corridor.
 import 'report_enums.dart';
 
 class Report {
   final String id;
-  final String riderId;
+  final String passengerId;
   final String corridorId;
   final int price;
   final TimeSegment timeSegment;
@@ -15,7 +15,7 @@ class Report {
 
   const Report({
     required this.id,
-    required this.riderId,
+    required this.passengerId,
     required this.corridorId,
     required this.price,
     required this.timeSegment,

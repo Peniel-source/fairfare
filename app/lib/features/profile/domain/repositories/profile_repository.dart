@@ -1,8 +1,11 @@
-// Repository for rider profile and leaderboard.
-import '../entities/rider.dart';
+// Repository for passenger profile and leaderboard.
+import '../entities/leaderboard_entry.dart';
+import '../entities/passenger.dart';
 
 abstract class ProfileRepository {
-  Stream<Rider> watchMe();
+  Stream<Passenger> watchMe();
   Future<void> updateDisplayName(String name);
-  Stream<List<Rider>> watchLeaderboard();
+
+  /// Top passengers by trust score, highest first.
+  Stream<List<LeaderboardEntry>> watchLeaderboard();
 }

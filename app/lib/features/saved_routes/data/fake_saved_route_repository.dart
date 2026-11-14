@@ -21,18 +21,17 @@ class FakeSavedRouteRepository implements SavedRouteRepository {
     ),
   ];
 
-  FakeSavedRouteRepository() {
-    _controller.add(_routes);
-  }
-
   @override
-  Stream<List<SavedRoute>> watchAll() => _controller.stream;
+  Stream<List<SavedRoute>> watchAll() async* {
+    yield List.unmodifiable(_routes);
+    yield* _controller.stream;
+  }
 
   @override
   Future<void> add(SavedRoute route) async {
     await Future.delayed(const Duration(milliseconds: 200));
     _routes.add(route);
-    _controller.add(_routes);
+    _controller.add(List.unmodifiable(_routes));
   }
 
   @override
@@ -41,7 +40,7 @@ class FakeSavedRouteRepository implements SavedRouteRepository {
     final index = _routes.indexWhere((r) => r.id == route.id);
     if (index != -1) {
       _routes[index] = route;
-      _controller.add(_routes);
+      _controller.add(List.unmodifiable(_routes));
     }
   }
 
@@ -49,7 +48,7 @@ class FakeSavedRouteRepository implements SavedRouteRepository {
   Future<void> delete(String routeId) async {
     await Future.delayed(const Duration(milliseconds: 200));
     _routes.removeWhere((r) => r.id == routeId);
-    _controller.add(_routes);
+    _controller.add(List.unmodifiable(_routes));
   }
 
   void dispose() => _controller.close();

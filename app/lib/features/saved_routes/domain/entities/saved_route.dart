@@ -1,4 +1,4 @@
-/// A rider's saved favorite route.
+/// A passenger's saved favorite route.
 class SavedRoute {
   final String id;
   final String fromArea;

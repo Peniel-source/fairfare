@@ -1,4 +1,4 @@
-// Update the rider's display name.
+// Update the passenger's display name.
 import '../repositories/profile_repository.dart';
 
 class UpdateDisplayName {

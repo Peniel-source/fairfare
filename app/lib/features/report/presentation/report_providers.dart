@@ -18,7 +18,7 @@ final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   throw UnimplementedError('ReportRepositoryImpl not yet implemented');
 });
 
-/// Stream of the current rider's reports.
+/// Stream of the current passenger's reports.
 final myReportsProvider = StreamProvider<List<Report>>((ref) {
   return ref.watch(reportRepositoryProvider).watchMine();
 });

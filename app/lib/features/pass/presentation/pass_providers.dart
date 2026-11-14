@@ -16,7 +16,7 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
   throw UnimplementedError('SubscriptionRepositoryImpl not yet implemented');
 });
 
-/// Stream of the current rider's subscription.
+/// Stream of the current passenger's subscription.
 final subscriptionProvider = StreamProvider<Subscription?>((ref) {
   return ref.watch(subscriptionRepositoryProvider).watchMine();
 });

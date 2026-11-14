@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'shared/widgets/profile_greeting.dart';
 
@@ -13,6 +14,12 @@ const kPublicRoutes = {'/', '/login', '/register', '/reset-password'};
 
 /// Routes that redirect a signed-in user away from them.
 const kAuthOnlyRoutes = {'/', '/login', '/register'};
+
+/// Where a signed-in, verified passenger lands.
+const kHomeRoute = '/home/corridors';
+
+/// Where a signed-in passenger with an unverified email is held.
+const kVerifyEmailRoute = '/verify-email';
 
 /// The app's router configuration.
 ///
@@ -33,121 +40,131 @@ const kAuthOnlyRoutes = {'/', '/login', '/register'};
 ///  /settings      → Settings
 ///
 /// Auth redirects are driven by the auth state stream from [authStateProvider].
+/// The router listens to that provider through [refreshListenable], so the
+/// redirect re-runs on every sign in, sign out and email verification.
 /// Each screen owner replaces their placeholder screen.
-final appRouter = GoRouter(
-  navigatorKey: rootNavigatorKey,
-  initialLocation: '/',
-  redirect: (context, state) {
-    // Read auth state from the Riverpod provider tree attached to this context.
-    final container = ProviderScope.containerOf(context, listen: false);
-    final authAsyncValue = container.read(authStateProvider);
-    final user = authAsyncValue.value;
+final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(authStateProvider, (_, _) => refresh.value++);
+  ref.onDispose(refresh.dispose);
 
-    // If we don't know the auth state yet, stay on the current page.
-    if (authAsyncValue.isLoading || user == null) {
-      // Not signed in yet — allow public routes only.
-      if (!kPublicRoutes.contains(state.matchedLocation)) {
-        return '/';
-      }
-      return null;
-    }
+  final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/',
+    refreshListenable: refresh,
+    redirect: (context, state) =>
+        authRedirect(ref.read(authStateProvider), state.matchedLocation),
+    routes: _routes,
+  );
+  ref.onDispose(router.dispose);
+  return router;
+});
 
-    // Signed in with unverified email → verify screen.
-    if (!user.emailVerified) {
-      return '/verify-email';
-    }
+/// Pure redirect rule, kept out of the router so it can be unit tested (E6).
+///
+/// Returns the location to redirect to, or null to stay.
+///  - auth state still loading: stay put
+///  - signed out: public routes only, everything else goes to Landing
+///  - signed in, email not verified: Verify Email only
+///  - signed in and verified: auth screens and Verify Email go to Corridors
+String? authRedirect(AsyncValue<AuthUser?> auth, String location) {
+  if (auth.isLoading && !auth.hasValue) return null;
 
-    // Signed in — block auth-only routes.
-    if (kAuthOnlyRoutes.contains(state.matchedLocation)) {
-      return '/home/corridors';
-    }
+  final user = auth.value;
+  if (user == null) {
+    return kPublicRoutes.contains(location) ? null : '/';
+  }
 
-    return null;
-  },
-  routes: [
-    // Authenticated home shell with bottom navigation
-    ShellRoute(
-      builder: (context, state, child) {
-        return _HomeShell(state: state, child: child);
-      },
-      routes: [
-        GoRoute(
-          path: '/home/corridors',
-          name: 'corridors',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Corridors'),
-        ),
-        GoRoute(
-          path: '/home/report',
-          name: 'report',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Report'),
-        ),
-        GoRoute(
-          path: '/home/pass',
-          name: 'pass',
-          builder: (context, state) => const _PlaceholderScreen(title: 'Pass'),
-        ),
-        GoRoute(
-          path: '/home/wallet',
-          name: 'wallet',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Wallet'),
-        ),
-      ],
-    ),
-    // Standalone routes
-    GoRoute(
-      path: '/',
-      name: 'landing',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Landing'),
-    ),
-    GoRoute(
-      path: '/login',
-      name: 'login',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Login'),
-    ),
-    GoRoute(
-      path: '/register',
-      name: 'register',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Register'),
-    ),
-    GoRoute(
-      path: '/reset-password',
-      name: 'resetPassword',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'Reset Password'),
-    ),
-    GoRoute(
-      path: '/verify-email',
-      name: 'verifyEmail',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'Verify Email'),
-    ),
-    GoRoute(
-      path: '/saved-routes',
-      name: 'savedRoutes',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'Saved Routes'),
-    ),
-    GoRoute(
-      path: '/my-reports',
-      name: 'myReports',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'My Reports'),
-    ),
-    GoRoute(
-      path: '/profile',
-      name: 'profile',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
-    ),
-    GoRoute(
-      path: '/settings',
-      name: 'settings',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
-    ),
-  ],
-);
+  if (!user.emailVerified) {
+    return location == kVerifyEmailRoute ? null : kVerifyEmailRoute;
+  }
+
+  if (kAuthOnlyRoutes.contains(location) || location == kVerifyEmailRoute) {
+    return kHomeRoute;
+  }
+  return null;
+}
+
+final _routes = <RouteBase>[
+  // Authenticated home shell with bottom navigation
+  ShellRoute(
+    builder: (context, state, child) {
+      return _HomeShell(state: state, child: child);
+    },
+    routes: [
+      GoRoute(
+        path: '/home/corridors',
+        name: 'corridors',
+        builder: (context, state) =>
+            const _PlaceholderScreen(title: 'Corridors'),
+      ),
+      GoRoute(
+        path: '/home/report',
+        name: 'report',
+        builder: (context, state) => const _PlaceholderScreen(title: 'Report'),
+      ),
+      GoRoute(
+        path: '/home/pass',
+        name: 'pass',
+        builder: (context, state) => const _PlaceholderScreen(title: 'Pass'),
+      ),
+      GoRoute(
+        path: '/home/wallet',
+        name: 'wallet',
+        builder: (context, state) => const _PlaceholderScreen(title: 'Wallet'),
+      ),
+    ],
+  ),
+  // Standalone routes
+  GoRoute(
+    path: '/',
+    name: 'landing',
+    builder: (context, state) => const _PlaceholderScreen(title: 'Landing'),
+  ),
+  GoRoute(
+    path: '/login',
+    name: 'login',
+    builder: (context, state) => const _PlaceholderScreen(title: 'Login'),
+  ),
+  GoRoute(
+    path: '/register',
+    name: 'register',
+    builder: (context, state) => const _PlaceholderScreen(title: 'Register'),
+  ),
+  GoRoute(
+    path: '/reset-password',
+    name: 'resetPassword',
+    builder: (context, state) =>
+        const _PlaceholderScreen(title: 'Reset Password'),
+  ),
+  GoRoute(
+    path: '/verify-email',
+    name: 'verifyEmail',
+    builder: (context, state) =>
+        const _PlaceholderScreen(title: 'Verify Email'),
+  ),
+  GoRoute(
+    path: '/saved-routes',
+    name: 'savedRoutes',
+    builder: (context, state) =>
+        const _PlaceholderScreen(title: 'Saved Routes'),
+  ),
+  GoRoute(
+    path: '/my-reports',
+    name: 'myReports',
+    builder: (context, state) => const _PlaceholderScreen(title: 'My Reports'),
+  ),
+  GoRoute(
+    path: '/profile',
+    name: 'profile',
+    builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+  ),
+  GoRoute(
+    path: '/settings',
+    name: 'settings',
+    builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
+  ),
+];
 
 /// Home shell with bottom navigation bar (4 tabs).
 class _HomeShell extends StatefulWidget {

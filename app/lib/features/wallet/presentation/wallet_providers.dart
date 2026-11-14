@@ -18,7 +18,7 @@ final walletRepositoryProvider = Provider<WalletRepository>((ref) {
   throw UnimplementedError('WalletRepositoryImpl not yet implemented');
 });
 
-/// Stream of the current rider's wallet balances.
+/// Stream of the current passenger's wallet balances.
 final walletProvider = StreamProvider<Wallet>((ref) {
   return ref.watch(walletRepositoryProvider).watchWallet();
 });
