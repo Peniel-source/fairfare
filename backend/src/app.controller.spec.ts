@@ -1,22 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect } from 'vitest';
 import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
+import { FirebaseService } from './firebase/firebase.service.js';
 
 describe('AppController', () => {
-  let appController: AppController;
+  it('returns ok when Firestore is reachable', async () => {
+    const fake = {
+      firestore: { doc: () => ({ get: async () => ({}) }) },
+    } as unknown as FirebaseService;
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-
-    appController = app.get<AppController>(AppController);
-  });
-
-  describe('root', () => {
-    it('should return "Fair Fare"', () => {
-      expect(appController.getHello()).toBe('Fair Fare');
-    });
+    const controller = new AppController(fake);
+    expect(await controller.health()).toEqual({ status: 'ok' });
   });
 });
