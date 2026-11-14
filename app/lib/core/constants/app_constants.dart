@@ -43,6 +43,14 @@ class AppConstants {
   /// Subscription duration (30 days).
   static const Duration subscriptionDuration = Duration(days: 30);
 
+  /// Price of one Pass in RWF.
+  /// PLACEHOLDER: confirm the real price with the team before the demo.
+  static const int passPriceRwf = 2000;
+
+  /// Mobile money code the passenger dials to pay for a Pass.
+  /// PLACEHOLDER: the real merchant code comes from the team (task guide E2).
+  static const String passDialCode = '*182*8*1*000000#';
+
   /// Toggle between fake repositories (true) and real Firestore repositories (false).
   /// Flip this to false in Phase 2 when real data wiring is ready.
   static const bool useFakeData = true;

@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
-import 'shared/widgets/profile_greeting.dart';
+import 'features/pass/presentation/pass_screen.dart';
+import 'shared/widgets/home_app_bar.dart';
 
 /// Top-level navigator key for GoRouter.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -106,7 +107,7 @@ final _routes = <RouteBase>[
       GoRoute(
         path: '/home/pass',
         name: 'pass',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Pass'),
+        builder: (context, state) => const PassScreen(),
       ),
       GoRoute(
         path: '/home/wallet',
@@ -242,16 +243,7 @@ class _PlaceholderScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const ProfileGreeting(),
-        actions: [
-          // Avatar icon opens Profile and Settings
-          IconButton(
-            icon: const CircleAvatar(child: Icon(Icons.person)),
-            onPressed: () => context.push('/profile'),
-          ),
-        ],
-      ),
+      appBar: const HomeAppBar(),
       body: Center(child: Text('$title — coming soon')),
     );
   }

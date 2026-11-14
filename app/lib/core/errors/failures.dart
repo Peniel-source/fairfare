@@ -52,6 +52,16 @@ class FirestoreFailure extends Failure {
   const FirestoreFailure([super.message = 'Database operation failed']);
 }
 
+/// A payment reference that was already submitted (the rules refuse it,
+/// because the reference is the subscription document id).
+class DuplicateReferenceFailure extends Failure {
+  const DuplicateReferenceFailure([
+    super.message =
+        'This payment reference was already used. Check the code in your '
+        'payment SMS and try again',
+  ]);
+}
+
 /// Validation failure from form input.
 class ValidationFailure extends Failure {
   const ValidationFailure([super.message = 'Please check your input']);
