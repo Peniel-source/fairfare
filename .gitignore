@@ -18,3 +18,5 @@ lcov.info
 # Firebase service account keys
 *serviceAccount*.json
 *firebase-adminsdk*.json
+
+*-debug.log
