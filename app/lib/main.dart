@@ -1,37 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app.dart';
 import 'firebase_options.dart';
+
+// Hook for D3: load preferences before the first frame.
+// When D3 is ready, call this before runApp to seed the saved theme.
+Future<void> _loadPreferences() async {
+  // TODO(D3): load AppSettings from shared_preferences here
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Fair Fare',
-      theme: ThemeData(),
-      home: const MyHomePage(title: 'Fair Fare Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const Center(child: Text('FairFare')),
-    );
-  }
+  await _loadPreferences();
+  runApp(const ProviderScope(child: FairFareApp()));
 }

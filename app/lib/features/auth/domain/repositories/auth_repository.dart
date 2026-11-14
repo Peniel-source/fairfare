@@ -1,0 +1,17 @@
+// Repository for authentication operations.
+import '../entities/auth_user.dart';
+
+abstract class AuthRepository {
+  Stream<AuthUser?> authStateChanges();
+  Future<void> registerWithEmail(
+    String email,
+    String password,
+    String displayName,
+  );
+  Future<void> signInWithEmail(String email, String password);
+  Future<void> signInWithGoogle();
+  Future<void> sendPasswordReset(String email);
+  Future<void> sendEmailVerification();
+  Future<void> reloadUser();
+  Future<void> signOut();
+}
