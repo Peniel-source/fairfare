@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'features/pass/presentation/pass_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
+import 'features/wallet/presentation/wallet_screen.dart';
 import 'shared/widgets/home_app_bar.dart';
 
 /// Top-level navigator key for GoRouter.
@@ -112,7 +114,7 @@ final _routes = <RouteBase>[
       GoRoute(
         path: '/home/wallet',
         name: 'wallet',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Wallet'),
+        builder: (context, state) => const WalletScreen(),
       ),
     ],
   ),
@@ -163,7 +165,7 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/settings',
     name: 'settings',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Settings'),
+    builder: (context, state) => const SettingsScreen(),
   ),
 ];
 
