@@ -69,6 +69,8 @@ class FakeReportRepository implements ReportRepository {
         weather: _reports[index].weather,
         status: _reports[index].status,
         createdAt: _reports[index].createdAt,
+        processedAt: _reports[index].processedAt,
+        isSeeded: _reports[index].isSeeded,
       );
       _controller.add(List.unmodifiable(_reports));
     }
