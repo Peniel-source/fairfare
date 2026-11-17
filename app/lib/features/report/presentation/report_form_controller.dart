@@ -157,7 +157,8 @@ class ReportFormController extends AutoDisposeNotifier<ReportFormState> {
   /// Validates and submits
   Future<bool> submit() async {
     if (state.isSubmitting) return false;
-    final corridor = ref.read(selectedCorridorProvider);
+    final corridors = ref.read(popularCorridorsProvider).value ?? const [];
+    final corridor = findCorridor(corridors, state.pickup, state.dropoff);
     final hasErrors =
         routeError(
               pickup: state.pickup,
