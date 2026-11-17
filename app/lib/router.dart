@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'features/pass/presentation/pass_screen.dart';
+import 'features/report/presentation/report_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/wallet/presentation/wallet_screen.dart';
 import 'shared/widgets/home_app_bar.dart';
@@ -104,7 +105,7 @@ final _routes = <RouteBase>[
       GoRoute(
         path: '/home/report',
         name: 'report',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Report'),
+        builder: (context, state) => const ReportScreen(),
       ),
       GoRoute(
         path: '/home/pass',
