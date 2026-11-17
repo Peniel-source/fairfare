@@ -1,37 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app.dart';
+import 'core/preferences/preferences_provider.dart';
 import 'firebase_options.dart';
+
+/// D3: loads shared_preferences before the first frame, so the app starts in
+/// the saved state (theme, default time of day, last corridor).
+Future<SharedPreferences> _loadPreferences() => SharedPreferences.getInstance();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Fair Fare',
-      theme: ThemeData(),
-      home: const MyHomePage(title: 'Fair Fare Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const Center(child: Text('FairFare')),
-    );
-  }
+  final prefs = await _loadPreferences();
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const FairFareApp(),
+    ),
+  );
 }
