@@ -68,7 +68,6 @@ async function seed() {
         .collection(COLLECTIONS.reports)
         .doc('seed-' + corridorId + '-' + (i + 1))
         .set({
-          passengerId: null,
           corridorId: corridorId,
           price: route.prices[i],
           timeSegment: 'midday',
