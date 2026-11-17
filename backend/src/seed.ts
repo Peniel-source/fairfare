@@ -26,6 +26,13 @@ function makeId(from: string, to: string) {
   return (from + '-' + to).toLowerCase().replace(/\s+/g, '-');
 }
 
+//making reverse direction for the same route
+const allRoutes: typeof startingRoutes = [];
+for (const route of startingRoutes) {
+  allRoutes.push(route);
+  allRoutes.push({ from: route.to, to: route.from, prices: route.prices });
+}
+
 //seeding
 async function seed() {
   // Start the server to use the Firebase connection and stats service
@@ -44,7 +51,7 @@ async function seed() {
 
   const now = Timestamp.now();
 
-  for (const route of startingRoutes) {
+  for (const route of allRoutes) {
     const corridorId = makeId(route.from, route.to);
 
     //the corridor itself
