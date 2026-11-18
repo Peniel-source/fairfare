@@ -137,7 +137,7 @@ class _EntriesSection extends ConsumerWidget {
                 icon: Icons.star_outline,
                 title: 'No rewards yet',
                 message:
-                    'Report the fare you paid. When another rider confirms '
+                    'Report the fare you paid. When another passenger confirms '
                     'it, you earn points.',
               )
             : Column(

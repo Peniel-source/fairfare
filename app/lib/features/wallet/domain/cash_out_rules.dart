@@ -1,7 +1,7 @@
 // Cash out rules (D4). Pure Dart, no Flutter or Firebase, so they can be unit
 // tested and reused by the form and the use case.
 
-/// Payout methods a rider can pick. Payouts are in-app points; the method only
+/// Payout methods a passenger can pick. Payouts are in-app points; the method only
 /// tells the team where a real payout would go (see Known Limitations).
 const cashOutMethods = ['MTN MoMo', 'Airtel Money'];
 
