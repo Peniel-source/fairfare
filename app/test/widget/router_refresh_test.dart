@@ -33,7 +33,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Landing — coming soon'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
 
     // Signing in only changes the auth stream; the router must react.
     // Not awaited: the fake's delay runs on the test clock, which only moves
@@ -46,6 +46,6 @@ void main() {
     auth.signOut();
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
-    expect(find.text('Landing — coming soon'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
   });
 }
