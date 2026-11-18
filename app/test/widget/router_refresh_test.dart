@@ -6,6 +6,9 @@ import 'package:fairfare/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+import 'package:fairfare/features/settings/presentation/settings_providers.dart';
+import 'package:fairfare/core/theme/app_theme.dart';
 
 void main() {
   testWidgets('sign in and sign out move the app without manual navigation', (
@@ -13,7 +16,8 @@ void main() {
   ) async {
     final auth = FakeAuthRepository();
     final container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(auth)],
+      overrides: [authRepositoryProvider.overrideWithValue(auth),
+        settingsRepositoryProvider.overrideWithValue(FakeSettingsRepository()),],
     );
     addTearDown(container.dispose);
 
@@ -22,7 +26,9 @@ void main() {
         container: container,
         child: Consumer(
           builder: (context, ref, _) =>
-              MaterialApp.router(routerConfig: ref.watch(routerProvider)),
+              MaterialApp.router(
+                  theme: AppTheme.light(useGoogleFonts: false),
+                  routerConfig: ref.watch(routerProvider)),
         ),
       ),
     );
@@ -35,7 +41,7 @@ void main() {
     auth.signInWithEmail('a@example.com', 'secret123');
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
-    expect(find.text('Corridors — coming soon'), findsOneWidget);
+    expect(find.text('How much do you pay?'), findsOneWidget);
 
     auth.signOut();
     await tester.pump(const Duration(milliseconds: 400));
