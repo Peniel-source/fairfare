@@ -1,6 +1,162 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owns(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function ownsDocument() {
+      return owns(resource.data.get('passengerId', ''));
+    }
+
+    function text(value, maximum) {
+      return value is string
+        && value.size() >= 1
+        && value.size() <= maximum
+        && value.matches('\\S(.*\\S)?');
+    }
+
+    function validPrice(value) {
+      return value is int && value >= 1 && value <= 50000;
+    }
+
+    function validRoute(data) {
+      return text(data.fromArea, 80)
+        && text(data.toArea, 80)
+        && data.fromArea.lower() != data.toArea.lower()
+        && text(data.label, 80);
+    }
+
+    function validReport(data) {
+      return data.keys().hasAll([
+          'passengerId', 'corridorId', 'price', 'timeSegment',
+          'weather', 'status', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'passengerId', 'corridorId', 'price', 'timeSegment',
+          'weather', 'status', 'createdAt', 'isSeeded',
+          'reason', 'verifiedAt', 'processedAt'
+        ])
+        && owns(data.passengerId)
+        && text(data.corridorId, 160)
+        && exists(/databases/$(database)/documents/corridors/$(data.corridorId))
+        && validPrice(data.price)
+        && data.timeSegment in ['morning', 'midday', 'evening', 'lateNight']
+        && data.weather in ['clear', 'heavyRain']
+        && data.status == 'pending'
+        && data.createdAt == request.time
+        && data.get('isSeeded', false) == false
+        && data.get('reason', null) == null
+        && data.get('verifiedAt', null) == null
+        && data.get('processedAt', null) == null;
+    }
+
+    match /passengers/{uid} {
+      allow read: if owns(uid);
+      allow create: if owns(uid)
+        && request.resource.data.keys().hasAll(['displayName', 'email', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['displayName', 'email', 'createdAt'])
+        && text(request.resource.data.displayName, 80)
+        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.get('email', '')
+        && request.resource.data.email.size() >= 1
+        && request.resource.data.createdAt == request.time;
+      allow update: if owns(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])
+        && text(request.resource.data.displayName, 80);
+
+      match /savedRoutes/{routeId} {
+        allow read, delete: if owns(uid);
+        allow create: if owns(uid)
+          && request.resource.data.keys().hasAll(['fromArea', 'toArea', 'label', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['fromArea', 'toArea', 'label', 'createdAt'])
+          && validRoute(request.resource.data)
+          && request.resource.data.createdAt == request.time;
+        allow update: if owns(uid)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['fromArea', 'toArea', 'label'])
+          && validRoute(request.resource.data);
+      }
+    }
+
+    match /corridors/{id} {
+      allow read: if true;
+    }
+
+    match /corridorStats/{id} {
+      allow read: if true;
+    }
+
+    match /notarizations/{id} {
+      allow read: if true;
+    }
+
+    match /leaderboard/{uid} {
+      allow read: if true;
+    }
+
+    match /reports/{id} {
+      allow read: if ownsDocument();
+      allow create: if signedIn() && validReport(request.resource.data);
+      allow update: if ownsDocument()
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['price'])
+        && validPrice(request.resource.data.price);
+      allow delete: if ownsDocument() && resource.data.status == 'pending';
+    }
+
+    match /wallets/{uid} {
+      allow read: if owns(uid);
+    }
+
+    match /walletEntries/{id} {
+      allow read: if ownsDocument();
+    }
+
+    match /cashOutRequests/{id} {
+      allow read: if ownsDocument();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'passengerId', 'amount', 'method', 'status', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'passengerId', 'amount', 'method', 'status', 'createdAt'
+        ])
+        && owns(request.resource.data.passengerId)
+        && request.resource.data.amount is int
+        && request.resource.data.amount > 0
+        && request.resource.data.method in ['MTN MoMo', 'Airtel Money']
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/wallets/$(request.auth.uid))
+        && request.resource.data.amount
+          <= get(/databases/$(database)/documents/wallets/$(request.auth.uid))
+            .data.finalizedBalance;
+    }
+
+    match /subscriptions/{reference} {
+      allow read: if ownsDocument();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'passengerId', 'reference', 'amount', 'status'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'passengerId', 'reference', 'amount', 'status', 'startsAt', 'endsAt'
+        ])
+        && owns(request.resource.data.passengerId)
+        && reference.matches('[A-Z0-9]{6,20}')
+        && request.resource.data.reference == reference
+        && request.resource.data.amount is int
+        && request.resource.data.amount == 2000
+        && request.resource.data.status == 'pending'
+        && request.resource.data.get('startsAt', null) == null
+        && request.resource.data.get('endsAt', null) == null;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
