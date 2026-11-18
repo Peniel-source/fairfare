@@ -3,7 +3,7 @@ import 'report_enums.dart';
 
 class Report {
   final String id;
-  final String passengerId;
+  final String? passengerId;
   final String corridorId;
   final int price;
   final TimeSegment timeSegment;
@@ -12,10 +12,12 @@ class Report {
   final String? reason;
   final DateTime createdAt;
   final DateTime? verifiedAt;
+  final DateTime? processedAt;
+  final bool isSeeded;
 
   const Report({
     required this.id,
-    required this.passengerId,
+    this.passengerId,
     required this.corridorId,
     required this.price,
     required this.timeSegment,
@@ -24,5 +26,7 @@ class Report {
     this.reason,
     required this.createdAt,
     this.verifiedAt,
+    this.processedAt,
+    this.isSeeded = false,
   });
 }

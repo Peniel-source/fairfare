@@ -7,7 +7,7 @@ import 'router.dart';
 
 /// Root widget for FairFare. Uses MaterialApp.router with go_router.
 /// The theme comes from D1; the theme mode is the saved setting from D3 and
-/// changes live when the rider picks another one.
+/// changes live when the passenger picks another one.
 class FairFareApp extends ConsumerWidget {
   const FairFareApp({super.key});
 
