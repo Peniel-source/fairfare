@@ -52,7 +52,7 @@ erDiagram
     }
     REPORT {
         string documentId PK
-        string passengerId FK
+        string? passengerId FK
         string corridorId FK
         int price
         string timeSegment
@@ -61,6 +61,7 @@ erDiagram
         string reason
         timestamp createdAt
         timestamp verifiedAt
+        timestamp? processedAt
         bool isSeeded
     }
     WALLET {
@@ -117,3 +118,38 @@ erDiagram
 ```
 
 ![ERD](erd.png)
+
+## Firestore mapping
+
+| Entity | Firestore path | Passenger writes | Backend writes | App reads |
+|---|---|---|---|---|
+| Passenger | `passengers/{uid}` | Creates `displayName`, `email`, `createdAt`; updates `displayName` | `trustScore`, `streak`, `badges`, `verifiedCount`, `lastReportDate`; optional `phone` and email synchronization | Owner |
+| Saved route | `passengers/{uid}/savedRoutes/{routeId}` | Creates `fromArea`, `toArea`, `label`, `createdAt`; edits areas/label; deletes own route | None required | Owner |
+| Corridor | `corridors/{corridorId}` | None | `fromArea`, `toArea`, `isSeeded`, `createdAt` | Public |
+| Corridor statistics | `corridorStats/{corridorId}` | None | `median`, `low`, `high`, `sampleSize`, `confidence`, `windowDays`, `updatedAt` | Public |
+| Report | `reports/{reportId}` | Creates `passengerId`, `corridorId`, `price`, `timeSegment`, `weather`, `createdAt`, `status: pending`; edits price or deletes only while pending | `status` changes, `reason`, `verifiedAt`, `processedAt`, `isSeeded`; all seed-report fields | Owner |
+| Wallet | `wallets/{uid}` | None | `pendingBalance`, `finalizedBalance`, `updatedAt` | Owner |
+| Wallet entry | `walletEntries/{reportId}` | None | `passengerId`, `reportId`, `amount`, `state`, `createdAt` | Owner |
+| Cash-out request | `cashOutRequests/{requestId}` | Creates `passengerId`, `amount`, `method`, `createdAt`, `status: pending` | `status` changes | Owner |
+| Subscription | `subscriptions/{reference}` | Creates `passengerId`, `reference`, `amount`, `status: pending` | `status` changes, `startsAt`, `endsAt` | Owner |
+| Leaderboard entry | `leaderboard/{uid}` | None | `displayName`, `trustScore`; E5 keeps the copied name synchronized when a passenger edits it | Public |
+| Pool ledger | `poolLedger/main` | None | `rewardBalance`, `operationsBalance`, `reserveBalance`, `updatedAt` | None |
+| Notarization | `notarizations/{notarizationId}` | None | `hash`, `txId`, `periodStart`, `periodEnd`, `createdAt` | Public |
+
+`documentId` and saved-route `ownerUid` represent document-path keys, not stored fields. Timestamps are Firestore Timestamps. The domain layer represents them as `DateTime` values. The table defines the access contract for B2 security rules.
+
+## Report creation
+
+| Field | Passenger report | Backend seed report |
+|---|---|---|
+| `passengerId` | Authenticated passenger UID | Omitted, not stored as null |
+| `status` | `pending` | `verified` |
+| `isSeeded` | Omitted or `false` | `true` |
+| `processedAt` | Absent or null until the backend sets it | Absent or null until the backend sets it |
+| `verifiedAt` | Absent or null until verification | Verification timestamp |
+
+The `Report` domain entity allows an absent passenger ID for seed reports. Firestore writers must omit that field for seeds. Seed reports are written by the backend and are included in corridor statistics.
+
+## LeaderboardEntry
+
+[`LeaderboardEntry`](../app/lib/features/profile/domain/entities/leaderboard_entry.dart) contains `id` (passenger UID), `displayName`, and `trustScore`. The backend writes the public name/score projection; private passenger fields remain in `passengers/{uid}`.
