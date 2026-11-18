@@ -257,7 +257,7 @@ class _AccountCard extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    // The router listens to the auth state and sends the rider to Landing.
+    // The router listens to the auth state and sends the passenger to Landing.
     // TODO(D2): also clear per-user provider state so the next user starts
     // clean, once Google sign in (D2) is wired.
     await ref.read(signOutProvider).call();
