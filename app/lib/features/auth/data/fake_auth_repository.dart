@@ -6,6 +6,12 @@ import '../domain/repositories/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
   AuthUser? _currentUser;
+  // AuthUser? _currentUser = const AuthUser(
+  //   id: 'fake_user_1',
+  //   email: 'test@example.com',
+  //   displayName: 'Test Student',
+  //   emailVerified: true,
+  // );
 
   /// Emits the current user first (like FirebaseAuth does), then every change,
   /// so the router never waits forever on a stream that has not fired yet.

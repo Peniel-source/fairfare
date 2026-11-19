@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'features/auth/presentation/auth_screen.dart';
 import 'features/landing/presentation/landing_screen.dart';
 import 'features/pass/presentation/pass_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
 import 'features/report/presentation/report_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/wallet/presentation/wallet_screen.dart';
 import 'shared/widgets/home_app_bar.dart';
+import 'features/corridors/presentation/corridors_screen.dart';
 
 /// Top-level navigator key for GoRouter.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -101,8 +102,7 @@ final _routes = <RouteBase>[
       GoRoute(
         path: '/home/corridors',
         name: 'corridors',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Corridors'),
+        builder: (context, state) => const CorridorsScreen(),
       ),
       GoRoute(
         path: '/home/report',
@@ -164,7 +164,7 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/profile',
     name: 'profile',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+    builder: (context, state) => const ProfileScreen(),
   ),
   GoRoute(
     path: '/settings',
