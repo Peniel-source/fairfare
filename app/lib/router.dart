@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
+import 'features/landing/presentation/landing_screen.dart';
 import 'features/pass/presentation/pass_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'shared/widgets/home_app_bar.dart';
@@ -121,7 +122,7 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/',
     name: 'landing',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Landing'),
+    builder: (context, state) => const LandingScreen(),
   ),
   GoRoute(
     path: '/login',
