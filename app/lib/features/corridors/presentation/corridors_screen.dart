@@ -33,15 +33,33 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
     // remember it, the report form uses this later
     ref.read(settingsProvider.notifier).setLastCorridorId(corridor.id);
 
-    final stats = await ref.read(corridorStatsProvider(corridor.id).future);
-    if (!mounted) return;
+    try {
+      final stats = await ref.read(corridorStatsProvider(corridor.id).future);
+      if (!mounted) return;
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => TipSheet(corridor: corridor, stats: stats),
-    );
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => TipSheet(corridor: corridor, stats: stats),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      // the price could not load, let the student try again
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Could not load this price. Check your connection'),
+          action: SnackBarAction(
+            label: 'Try again',
+            onPressed: () {
+              ref.invalidate(corridorStatsProvider(corridor.id));
+              pickCorridor(corridor);
+            },
+          ),
+        ),
+      );
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -176,7 +194,7 @@ class TipSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: AppSpacing.screen,
       child: Column(
         mainAxisSize: MainAxisSize.min,
