@@ -93,10 +93,9 @@ class CorridorRepositoryImpl implements CorridorRepository {
 
     //typed something, find every route that has this area in it
     final all = await loadAllCorridors();
-    final matches = all.where((corridor) {
+    return all.where((corridor) {
       return corridor.fromArea.toLowerCase().contains(text) ||
           corridor.toArea.toLowerCase().contains(text);
-    });
-    return matches.take(maxRoutes).toList();
+    }).toList();
   }
 }
