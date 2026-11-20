@@ -57,6 +57,7 @@ class _PassContent extends StatelessWidget {
               const SizedBox(height: 12),
               const DialPromptCard(
                 dialCode: AppConstants.passDialCode,
+                merchantCode: AppConstants.passMerchantCode,
                 priceRwf: AppConstants.passPriceRwf,
               ),
               const SizedBox(height: 12),

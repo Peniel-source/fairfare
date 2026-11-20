@@ -47,9 +47,14 @@ class AppConstants {
   /// PLACEHOLDER: confirm the real price with the team before the demo.
   static const int passPriceRwf = 2000;
 
-  /// Mobile money code the passenger dials to pay for a Pass.
-  /// PLACEHOLDER: the real merchant code comes from the team (task guide E2).
-  static const String passDialCode = '*182*8*1*000000#';
+  /// FairFare's MTN MoMo Pay merchant code. Shown on the Pass screen so the
+  /// passenger can check the payee on the MoMo confirmation before the PIN.
+  static const String passMerchantCode = '2358998';
+
+  /// MoMo Pay USSD code with the merchant and amount filled in, so the
+  /// passenger cannot type the wrong payee or amount.
+  static const String passDialCode =
+      '*182*8*1*$passMerchantCode*$passPriceRwf#';
 
   /// Toggle between fake repositories (true) and real Firestore repositories (false).
   /// Flip this to false in Phase 2 when real data wiring is ready.
