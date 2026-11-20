@@ -11,17 +11,17 @@ import '../domain/usecases/watch_corridor_stats.dart';
 import '../data/location_service.dart';
 import '../data/zone_repository.dart';
 import '../domain/zone_finder.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../data/zone_impl.dart';
+import '../data/corridor_impl.dart';
 
-/// Provider for the CorridorRepository implementation.
 final corridorRepositoryProvider = Provider<CorridorRepository>((ref) {
   if (AppConstants.useFakeData) {
     return FakeCorridorRepository();
   }
-  // TODO(A5): return CorridorRepositoryImpl() when real Firestore wiring is ready.
-  throw UnimplementedError('CorridorRepositoryImpl not yet implemented');
+  return CorridorRepositoryImpl(FirebaseFirestore.instance);
 });
 
-/// Use case providers.
 final searchCorridorsProvider = Provider<SearchCorridors>((ref) {
   return SearchCorridors(ref.watch(corridorRepositoryProvider));
 });
@@ -30,7 +30,6 @@ final watchCorridorStatsProvider = Provider<WatchCorridorStats>((ref) {
   return WatchCorridorStats(ref.watch(corridorRepositoryProvider));
 });
 
-/// Stream of corridor stats for a specific corridor id.
 final corridorStatsProvider = StreamProvider.family<CorridorStats?, String>((
   ref,
   corridorId,
@@ -38,7 +37,6 @@ final corridorStatsProvider = StreamProvider.family<CorridorStats?, String>((
   return ref.watch(corridorRepositoryProvider).watchStats(corridorId);
 });
 
-/// Future provider for popular corridors.
 final popularCorridorsProvider = FutureProvider<List<Corridor>>((ref) {
   return ref.watch(corridorRepositoryProvider).popularCorridors();
 });
@@ -67,7 +65,7 @@ final zoneRepositoryProvider = Provider<ZoneRepository>((ref) {
   if (AppConstants.useFakeData) {
     return FakeZoneRepository();
   }
-  throw UnimplementedError('ZoneRepositoryImpl not yet implemented');
+  return ZoneRepositoryImpl(FirebaseFirestore.instance);
 });
 
 // the list of zones for the pickup and dropoff fields
