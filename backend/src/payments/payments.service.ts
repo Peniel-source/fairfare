@@ -9,7 +9,16 @@ import {
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { COLLECTIONS, POOL_LEDGER_DOC_ID } from '../firebase/firestore-paths.js';
-import { passEnd, splitPayment } from './pool-split.js';
+import { PASS_PRICE_RWF, passEnd, splitPayment } from './pool-split.js';
+
+export type PendingPayment = {
+  reference: string;
+  amount: number;
+  passengerId: string;
+  // So the admin can match the payer on the MoMo statement to the account.
+  email: string | null;
+  displayName: string | null;
+};
 
 export type SubscriptionResult = {
   reference: string;
@@ -66,7 +75,15 @@ export class PaymentsService implements OnModuleInit, OnModuleDestroy {
       const sub = await tx.get(subRef);
       this.assertPending(reference, sub.exists, sub.get('status'));
 
-      const split = splitPayment(Number(sub.get('amount')));
+      // Never trust the amount on the document: only the Pass price can be
+      // approved, so a tampered amount cannot inflate the pool ledger.
+      const amount = sub.get('amount');
+      if (amount !== PASS_PRICE_RWF) {
+        throw new ConflictException(
+          `subscription ${reference} has amount ${String(amount)}, expected ${PASS_PRICE_RWF}`,
+        );
+      }
+      const split = splitPayment(amount);
       tx.update(subRef, {
         status: 'active',
         startsAt: Timestamp.fromDate(now),
@@ -91,6 +108,35 @@ export class PaymentsService implements OnModuleInit, OnModuleDestroy {
       startsAt: now.toISOString(),
       endsAt: endsAt.toISOString(),
     };
+  }
+
+  // Pending payments for the admin to check against the MoMo statement.
+  async listPending(limit = 100): Promise<PendingPayment[]> {
+    const db = this.firebase.firestore;
+    const snap = await db
+      .collection(COLLECTIONS.subscriptions)
+      .where('status', '==', 'pending')
+      .limit(limit)
+      .get();
+    if (snap.empty) return [];
+
+    const passengerIds = [...new Set(snap.docs.map((d) => String(d.get('passengerId'))))];
+    const passengers = await db.getAll(
+      ...passengerIds.map((id) => db.collection(COLLECTIONS.passengers).doc(id)),
+    );
+    const byId = new Map(passengers.map((p) => [p.id, p]));
+
+    return snap.docs.map((doc) => {
+      const passengerId = String(doc.get('passengerId'));
+      const passenger = byId.get(passengerId);
+      return {
+        reference: doc.id,
+        amount: Number(doc.get('amount')),
+        passengerId,
+        email: passenger?.exists ? (passenger.get('email') ?? null) : null,
+        displayName: passenger?.exists ? (passenger.get('displayName') ?? null) : null,
+      };
+    });
   }
 
   async reject(reference: string): Promise<SubscriptionResult> {
