@@ -4,6 +4,10 @@ export const REWARD_SHARE = 0.35;
 export const OPERATIONS_SHARE = 0.45;
 export const PASS_DAYS = 30;
 
+// Price of one Pass in RWF, paid to MoMo Pay merchant 2358998. Must match
+// AppConstants.passPriceRwf in the app and the amount the rules accept.
+export const PASS_PRICE_RWF = 2000;
+
 export type PoolSplit = {
   rewardBalance: number;
   operationsBalance: number;
