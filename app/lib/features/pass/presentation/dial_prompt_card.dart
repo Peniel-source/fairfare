@@ -16,10 +16,12 @@ class DialPromptCard extends StatelessWidget {
   const DialPromptCard({
     super.key,
     required this.dialCode,
+    required this.merchantCode,
     required this.priceRwf,
   });
 
   final String dialCode;
+  final String merchantCode;
   final int priceRwf;
 
   bool get _canDial =>
@@ -30,7 +32,8 @@ class DialPromptCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final steps = [
       'Dial the code below${_canDial ? ' (or tap Dial)' : ''}.',
-      'Pay ${Formatters.price(priceRwf)} and confirm with your PIN.',
+      'Check MoMo shows merchant $merchantCode and '
+          '${Formatters.price(priceRwf)}, then confirm with your PIN.',
       'Copy the reference from the payment SMS.',
       'Enter it below and tap Submit.',
     ];
@@ -42,6 +45,12 @@ class DialPromptCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('How to pay', style: text.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              'MoMo Pay merchant $merchantCode',
+              style: text.bodyMedium,
+              semanticsLabel: 'Pay to MoMo merchant $merchantCode',
+            ),
             const SizedBox(height: 8),
             for (var i = 0; i < steps.length; i++)
               Padding(

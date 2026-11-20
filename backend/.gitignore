@@ -1,7 +1,12 @@
 .env
 .env.*
 *.env
+# Template with blank values, safe to commit
+!.env.example
 *serviceAccount*.json
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
 *.pem
 *.key
 
