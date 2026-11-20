@@ -53,6 +53,7 @@ dependencies:
   geolocator: ^14.1.2
 
 dev_dependencies:
+  fake_cloud_firestore: 4.5.0
   flutter_test:
     sdk: flutter
 
