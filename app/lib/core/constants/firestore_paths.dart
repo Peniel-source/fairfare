@@ -3,6 +3,7 @@ abstract final class FirestorePaths {
   static const savedRoutes = 'savedRoutes';
   static const corridors = 'corridors';
   static const corridorStats = 'corridorStats';
+  static const zones = 'zones';
   static const reports = 'reports';
   static const wallets = 'wallets';
   static const walletEntries = 'walletEntries';
