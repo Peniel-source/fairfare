@@ -12,7 +12,7 @@ class FakeReportRepository implements ReportRepository {
     Report(
       id: 'r1',
       passengerId: 'fake_user_1',
-      corridorId: 'c1',
+      corridorId: 'kacyiru-kimironko',
       price: 600,
       timeSegment: TimeSegment.morning,
       weather: Weather.clear,
@@ -23,7 +23,7 @@ class FakeReportRepository implements ReportRepository {
     Report(
       id: 'r2',
       passengerId: 'fake_user_1',
-      corridorId: 'c2',
+      corridorId: 'alu-downtown',
       price: 500,
       timeSegment: TimeSegment.evening,
       weather: Weather.clear,
