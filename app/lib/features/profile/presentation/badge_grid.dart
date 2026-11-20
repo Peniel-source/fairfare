@@ -1,6 +1,7 @@
 // Every badge, earned or locked. Locked badges say how to earn them.
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../domain/badges.dart';
 
 class BadgeGrid extends StatelessWidget {
@@ -23,7 +24,7 @@ class BadgeGrid extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -32,17 +33,17 @@ class BadgeGrid extends StatelessWidget {
               style: text.titleMedium,
             ),
             if (earnedCount == 0) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 'No badges yet. Here is how to earn them.',
                 style: text.bodyMedium,
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             // Wrap instead of a fixed grid, so tiles reflow in landscape.
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.md,
               children: [
                 for (final badge in Badges.all)
                   _BadgeTile(
@@ -95,7 +96,7 @@ class _BadgeTile extends StatelessWidget {
                     : scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               badge.title,
               textAlign: TextAlign.center,

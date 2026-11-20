@@ -1,10 +1,11 @@
-// Fake profile repository with sample data.
+// Test-only fake of ProfileRepository. It lives under test/ so the app can
+// never show a made-up profile or leaderboard.
 import 'dart:async';
 
-import '../domain/badges.dart';
-import '../domain/entities/leaderboard_entry.dart';
-import '../domain/entities/passenger.dart';
-import '../domain/repositories/profile_repository.dart';
+import 'package:fairfare/features/profile/domain/badges.dart';
+import 'package:fairfare/features/profile/domain/entities/leaderboard_entry.dart';
+import 'package:fairfare/features/profile/domain/entities/passenger.dart';
+import 'package:fairfare/features/profile/domain/repositories/profile_repository.dart';
 
 class FakeProfileRepository implements ProfileRepository {
   /// Pass [me] or [leaderboard] to try other states (for example a brand new

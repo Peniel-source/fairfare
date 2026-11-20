@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_spacing.dart';
 
 class TrustScoreCard extends StatelessWidget {
   const TrustScoreCard({
@@ -25,7 +26,7 @@ class TrustScoreCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -66,9 +67,9 @@ class TrustScoreCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             LinearProgressIndicator(value: score / AppConstants.maxTrustScore),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               isNew
                   ? 'Welcome! Report what you paid after a ride. Each verified '

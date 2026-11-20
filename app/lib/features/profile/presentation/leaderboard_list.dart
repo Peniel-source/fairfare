@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../domain/entities/leaderboard_entry.dart';
 import 'profile_providers.dart';
 
@@ -17,18 +18,18 @@ class LeaderboardList extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text('Leaderboard', style: text.titleMedium),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             board.when(
               loading: () => const Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (error, _) => ListTile(
