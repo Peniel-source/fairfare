@@ -8,6 +8,9 @@ import '../domain/entities/corridor_stats.dart';
 import '../domain/repositories/corridor_repository.dart';
 import '../domain/usecases/search_corridors.dart';
 import '../domain/usecases/watch_corridor_stats.dart';
+import '../data/location_service.dart';
+import '../data/zone_repository.dart';
+import '../domain/zone_finder.dart';
 
 /// Provider for the CorridorRepository implementation.
 final corridorRepositoryProvider = Provider<CorridorRepository>((ref) {
@@ -46,4 +49,22 @@ final corridorSearchProvider = FutureProvider.family<List<Corridor>, String>((
     query,
     ) {
   return ref.watch(searchCorridorsProvider)(query);
+});
+
+// the repository that gives the list of zones
+final zoneRepositoryProvider = Provider<ZoneRepository>((ref) {
+  if (AppConstants.useFakeData) {
+    return FakeZoneRepository();
+  }
+  throw UnimplementedError('ZoneRepositoryImpl not yet implemented');
+});
+
+// the list of zones for the pickup and dropoff fields
+final zonesProvider = FutureProvider<List<Zone>>((ref) {
+  return ref.watch(zoneRepositoryProvider).getZones();
+});
+
+// asks the phone for its location
+final locationServiceProvider = Provider<LocationService>((ref) {
+  return LocationService();
 });

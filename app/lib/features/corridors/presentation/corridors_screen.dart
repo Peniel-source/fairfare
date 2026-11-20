@@ -13,8 +13,10 @@ import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/home_app_bar.dart';
 import '../../../shared/widgets/loading_view.dart';
 import '../../settings/presentation/settings_providers.dart';
+import '../data/location_service.dart';
 import '../domain/entities/corridor.dart';
 import '../domain/entities/corridor_stats.dart';
+import '../domain/zone_finder.dart';
 import 'corridor_card.dart';
 import 'corridor_providers.dart';
 
@@ -26,7 +28,66 @@ class CorridorsScreen extends ConsumerStatefulWidget {
 }
 
 class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
+  final searchBox = TextEditingController();
   String query = '';
+  bool findingLocation = false;
+
+  @override
+  void dispose() {
+    searchBox.dispose();
+    super.dispose();
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  //what to tell the student when the location could not be found
+  String locationMessage(LocationStatus status) {
+    if (status == LocationStatus.serviceOff) {
+      return 'Location is turned off. Turn it on or search an area';
+    }
+    if (status == LocationStatus.denied) {
+      return 'Location was not allowed. You can search an area';
+    }
+    if (status == LocationStatus.deniedForever) {
+      return 'Location is blocked for this app. Turn it on in your phone settings';
+    }
+    return 'Could not find your location. Search an area instead';
+  }
+
+  //finds the area nearest to the phone and puts its name in the search box
+  Future<void> useMyLocation() async {
+    setState(() => findingLocation = true);
+    final result = await ref.read(locationServiceProvider).getLocation();
+
+    if (result.status != LocationStatus.found) {
+      if (!mounted) return;
+      setState(() => findingLocation = false);
+      showMessage(locationMessage(result.status));
+      return;
+    }
+
+    try {
+      final zones = await ref.read(zonesProvider.future);
+      if (!mounted) return;
+      final zone = findNearestZone(result.latitude!, result.longitude!, zones);
+      setState(() => findingLocation = false);
+
+      if (zone == null) {
+        showMessage('You are outside our areas. Search an area instead');
+        return;
+      }
+      searchBox.text = zone.name;
+      setState(() => query = zone.name);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => findingLocation = false);
+      showMessage('Could not load the areas. Check your connection');
+    }
+  }
 
   // runs when a student taps a chip or a card
   Future<void> pickCorridor(Corridor corridor) async {
@@ -60,6 +121,7 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -82,11 +144,22 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
               Text('How much do you pay?', style: text.headlineSmall),
               const SizedBox(height: AppSpacing.lg),
 
-              //search box
+              //search box, the icon at the end finds the area you are in
               TextField(
-                decoration: const InputDecoration(
+                controller: searchBox,
+                decoration: InputDecoration(
                   hintText: 'Search an area, like Kimironko',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: findingLocation
+                      ? const Padding(
+                    padding: EdgeInsets.all(14),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : IconButton(
+                    tooltip: 'Use my location',
+                    icon: const Icon(Icons.my_location),
+                    onPressed: useMyLocation,
+                  ),
                 ),
                 onChanged: (value) => setState(() => query = value.trim()),
               ),
