@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../domain/entities/passenger.dart';
 import 'badge_grid.dart';
@@ -52,19 +53,19 @@ class _ProfileContent extends StatelessWidget {
     return Center(
       // Readable width on tablets and in landscape.
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             _ProfileHeader(passenger: passenger),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             TrustScoreCard(
               trustScore: passenger.trustScore,
               streak: passenger.streak,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             BadgeGrid(earnedIds: passenger.badges),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             LeaderboardList(currentPassengerId: passenger.id),
           ],
         ),
@@ -102,7 +103,7 @@ class _ProfileHeader extends StatelessWidget {
             style: text.titleLarge,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: AppSpacing.lg),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +141,7 @@ class _ProfileError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -149,9 +150,9 @@ class _ProfileError extends StatelessWidget {
               size: 48,
               color: Theme.of(context).colorScheme.error,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             OutlinedButton(onPressed: onRetry, child: const Text('Try again')),
           ],
         ),

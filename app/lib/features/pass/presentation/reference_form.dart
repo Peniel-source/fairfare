@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../domain/payment_reference.dart';
 import 'pass_providers.dart';
 
@@ -46,14 +47,14 @@ class _ReferenceFormState extends ConsumerState<ReferenceForm> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Payment reference', style: text.titleMedium),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _controller,
                 enabled: !sending,
@@ -77,7 +78,7 @@ class _ReferenceFormState extends ConsumerState<ReferenceForm> {
                 },
                 onFieldSubmitted: (_) => _submit(),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               FilledButton(
                 onPressed: sending ? null : _submit,
                 child: sending

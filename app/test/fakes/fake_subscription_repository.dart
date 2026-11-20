@@ -1,25 +1,21 @@
-// Fake subscription repository with sample data.
+// Test-only fake of SubscriptionRepository. It lives under test/ so the app
+// can never show a fake Pass; widget tests call approve()/reject() to play
+// the part of the E3 backend.
 import 'dart:async';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/errors/failures.dart';
-import '../domain/entities/subscription.dart';
-import '../domain/repositories/subscription_repository.dart';
-import '../../report/domain/entities/report_enums.dart';
+import 'package:fairfare/core/constants/app_constants.dart';
+import 'package:fairfare/core/errors/failures.dart';
+import 'package:fairfare/features/pass/domain/entities/subscription.dart';
+import 'package:fairfare/features/pass/domain/repositories/subscription_repository.dart';
+import 'package:fairfare/features/report/domain/entities/report_enums.dart';
 
 class FakeSubscriptionRepository implements SubscriptionRepository {
-  FakeSubscriptionRepository({this.autoApproveAfter});
-
-  /// When set, a submitted reference is approved by itself after this delay,
-  /// standing in for E3's approval endpoint during screen work.
-  final Duration? autoApproveAfter;
-
   final _controller = StreamController<Subscription?>.broadcast();
   Subscription? _subscription;
 
   /// References already used by anyone. In Firestore the reference is the
   /// subscription document id, so the rules refuse a second create.
-  final _usedReferences = <String>{'USED123456'};
+  final _usedReferences = <String>{'1000000001'};
 
   @override
   Stream<Subscription?> watchMine() async* {
@@ -40,10 +36,6 @@ class FakeSubscriptionRepository implements SubscriptionRepository {
         status: SubscriptionStatus.pending,
       ),
     );
-    final delay = autoApproveAfter;
-    if (delay != null) {
-      Future.delayed(delay, () => approve(reference));
-    }
   }
 
   /// Simulates E3 approving the pending subscription.

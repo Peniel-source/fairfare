@@ -2,10 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/failures.dart';
 import '../../auth/presentation/auth_providers.dart';
-import '../data/fake_profile_repository.dart';
 import '../data/profile_repository_impl.dart';
 import '../domain/entities/leaderboard_entry.dart';
 import '../domain/entities/passenger.dart';
@@ -16,13 +14,11 @@ import '../domain/usecases/update_display_name.dart';
 const kLeaderboardSize = 10;
 
 /// Provider for the ProfileRepository implementation.
+///
+/// Always the real Firestore repository: each signed-in passenger sees only
+/// their own profile (passengers/{uid}). Rebuilt on sign in and sign out, so
+/// one account never sees another's data.
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  if (AppConstants.useFakeData) {
-    final fake = FakeProfileRepository();
-    ref.onDispose(fake.dispose);
-    return fake;
-  }
-  // Rebuilt on sign in and sign out, so it always reads the current passenger.
   final uid = ref.watch(
     authStateProvider.select((auth) => auth.valueOrNull?.id),
   );
