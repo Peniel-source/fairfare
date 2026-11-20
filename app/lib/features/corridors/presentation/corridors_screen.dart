@@ -21,7 +21,10 @@ import 'corridor_card.dart';
 import 'corridor_providers.dart';
 
 class CorridorsScreen extends ConsumerStatefulWidget {
-  const CorridorsScreen({super.key});
+  const CorridorsScreen({super.key, this.fromArea, this.toArea});
+
+  final String? fromArea;
+  final String? toArea;
 
   @override
   ConsumerState<CorridorsScreen> createState() => _CorridorsScreenState();
@@ -39,9 +42,8 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   //what to tell the student when the location could not be found
@@ -109,7 +111,9 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
       // the price could not load, let the student try again
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Could not load this price. Check your connection'),
+          content: const Text(
+            'Could not load this price. Check your connection',
+          ),
           action: SnackBarAction(
             label: 'Try again',
             onPressed: () {
@@ -129,7 +133,15 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
       settingsProvider.select((settings) => settings.lastCorridorId),
     );
     final popular = ref.watch(popularCorridorsProvider);
-    final results = ref.watch(corridorSearchProvider(query));
+    final savedRoute = widget.fromArea != null && widget.toArea != null;
+    final results = savedRoute
+        ? ref.watch(
+            corridorRouteProvider((
+              fromArea: widget.fromArea!,
+              toArea: widget.toArea!,
+            )),
+          )
+        : ref.watch(corridorSearchProvider(query));
 
     return Scaffold(
       appBar: const HomeAppBar(),
@@ -141,54 +153,94 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
           child: ListView(
             padding: AppSpacing.screen,
             children: [
-              Text('How much do you pay?', style: text.headlineSmall),
-              const SizedBox(height: AppSpacing.lg),
-
-              //search box, the icon at the end finds the area you are in
-              TextField(
-                controller: searchBox,
-                decoration: InputDecoration(
-                  hintText: 'Search an area, like Kimironko',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: findingLocation
-                      ? const Padding(
-                    padding: EdgeInsets.all(14),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                      : IconButton(
-                    tooltip: 'Use my location',
-                    icon: const Icon(Icons.my_location),
-                    onPressed: useMyLocation,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'How much do you pay?',
+                      style: text.headlineSmall,
+                    ),
                   ),
-                ),
-                onChanged: (value) => setState(() => query = value.trim()),
+                  IconButton(
+                    tooltip: 'Saved routes',
+                    onPressed: () => context.pushNamed('savedRoutes'),
+                    icon: const Icon(Icons.bookmarks_outlined),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              Text('Popular routes', style: text.titleSmall),
-              const SizedBox(height: AppSpacing.sm),
-              popular.when(
-                data: (corridors) => ChipRow(
-                  corridors: corridors,
-                  selectedId: lastCorridorId,
-                  onPick: pickCorridor,
+              if (savedRoute)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${widget.fromArea} → ${widget.toArea}',
+                        style: text.titleSmall,
+                      ),
+                    ),
+                    AppButton(
+                      label: 'All routes',
+                      onPressed: () => context.goNamed('corridors'),
+                      variant: AppButtonVariant.text,
+                    ),
+                  ],
+                )
+              else
+                TextField(
+                  controller: searchBox,
+                  decoration: InputDecoration(
+                    hintText: 'Search an area, like Kimironko',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: findingLocation
+                        ? const Padding(
+                            padding: EdgeInsets.all(14),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : IconButton(
+                            tooltip: 'Use my location',
+                            icon: const Icon(Icons.my_location),
+                            onPressed: useMyLocation,
+                          ),
+                  ),
+                  onChanged: (value) => setState(() => query = value.trim()),
                 ),
-                loading: () => const SizedBox(height: AppSpacing.minTapTarget),
-                error: (error, stack) => const SizedBox.shrink(),
-              ),
               const SizedBox(height: AppSpacing.lg),
+
+              if (!savedRoute) ...[
+                Text('Popular routes', style: text.titleSmall),
+                const SizedBox(height: AppSpacing.sm),
+                popular.when(
+                  data: (corridors) => ChipRow(
+                    corridors: corridors,
+                    selectedId: lastCorridorId,
+                    onPick: pickCorridor,
+                  ),
+                  loading: () =>
+                      const SizedBox(height: AppSpacing.minTapTarget),
+                  error: (error, stack) => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
 
               //the list of cards
-              Text('All routes', style: text.titleSmall),
+              Text(
+                savedRoute ? 'Your route' : 'All routes',
+                style: text.titleSmall,
+              ),
               const SizedBox(height: AppSpacing.sm),
               results.when(
                 data: (corridors) {
                   if (corridors.isEmpty) {
-                    return const EmptyView(
+                    return EmptyView(
                       compact: true,
                       icon: Icons.search_off,
-                      title: 'No routes found',
-                      message: 'Try another area name.',
+                      title: savedRoute
+                          ? 'Route not available yet'
+                          : 'No routes found',
+                      message: savedRoute
+                          ? 'Show all routes to choose another corridor.'
+                          : 'Try another area name.',
                     );
                   }
                   return Column(
@@ -204,10 +256,22 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
                     ],
                   );
                 },
-                loading: () => const SizedBox(height: 120, child: LoadingView()),
+                loading: () =>
+                    const SizedBox(height: 120, child: LoadingView()),
                 error: (error, stack) => ErrorView(
                   compact: true,
-                  onRetry: () => ref.invalidate(corridorSearchProvider(query)),
+                  onRetry: () {
+                    if (savedRoute) {
+                      ref.invalidate(
+                        corridorRouteProvider((
+                          fromArea: widget.fromArea!,
+                          toArea: widget.toArea!,
+                        )),
+                      );
+                    } else {
+                      ref.invalidate(corridorSearchProvider(query));
+                    }
+                  },
                 ),
               ),
             ],
@@ -233,11 +297,15 @@ class CorridorTile extends ConsumerWidget {
       data: (stats) =>
           CorridorCard(corridor: corridor, stats: stats, onTap: onTap),
       loading: () => AppCard(
-        child: Text('${corridor.fromArea} to ${corridor.toArea}, loading price'),
+        child: Text(
+          '${corridor.fromArea} to ${corridor.toArea}, loading price',
+        ),
       ),
       error: (error, stack) => AppCard(
         onTap: onTap,
-        child: Text('${corridor.fromArea} to ${corridor.toArea}, price not available'),
+        child: Text(
+          '${corridor.fromArea} to ${corridor.toArea}, price not available',
+        ),
       ),
     );
   }

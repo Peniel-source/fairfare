@@ -43,11 +43,22 @@ final popularCorridorsProvider = FutureProvider<List<Corridor>>((ref) {
   return ref.watch(corridorRepositoryProvider).popularCorridors();
 });
 
+final corridorRouteProvider =
+    FutureProvider.family<List<Corridor>, ({String fromArea, String toArea})>((
+      ref,
+      route,
+    ) {
+      return ref.watch(searchCorridorsProvider)(
+        route.fromArea,
+        toArea: route.toArea,
+      );
+    });
+
 //the corridors that match what the usr typed
 final corridorSearchProvider = FutureProvider.family<List<Corridor>, String>((
-    ref,
-    query,
-    ) {
+  ref,
+  query,
+) {
   return ref.watch(searchCorridorsProvider)(query);
 });
 
