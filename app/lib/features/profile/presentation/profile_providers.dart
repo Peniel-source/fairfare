@@ -1,9 +1,12 @@
 // Riverpod providers for the profile feature.
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/failures.dart';
+import '../../auth/presentation/auth_providers.dart';
 import '../data/fake_profile_repository.dart';
+import '../data/profile_repository_impl.dart';
 import '../domain/entities/leaderboard_entry.dart';
 import '../domain/entities/passenger.dart';
 import '../domain/repositories/profile_repository.dart';
@@ -19,8 +22,11 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
     ref.onDispose(fake.dispose);
     return fake;
   }
-  // TODO(E4): return ProfileRepositoryImpl() when real Firestore wiring is ready.
-  throw UnimplementedError('ProfileRepositoryImpl not yet implemented');
+  // Rebuilt on sign in and sign out, so it always reads the current passenger.
+  final uid = ref.watch(
+    authStateProvider.select((auth) => auth.valueOrNull?.id),
+  );
+  return ProfileRepositoryImpl(FirebaseFirestore.instance, uid: uid);
 });
 
 /// Stream of the current passenger's profile.

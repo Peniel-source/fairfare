@@ -1,3 +1,4 @@
+import 'package:fairfare/core/constants/app_constants.dart';
 import 'package:fairfare/features/pass/data/fake_subscription_repository.dart';
 import 'package:fairfare/features/pass/presentation/dial_prompt_card.dart';
 import 'package:fairfare/features/pass/presentation/pass_providers.dart';
@@ -37,6 +38,8 @@ void main() {
     await pumpPass(tester);
     expect(find.text('No Pass yet'), findsOneWidget);
     expect(find.text('How to pay'), findsOneWidget);
+    expect(find.text('MoMo Pay merchant 2358998'), findsOneWidget);
+    expect(find.text('*182*8*1*2358998*2000#'), findsOneWidget);
     expect(find.byType(TextFormField), findsOneWidget);
   });
 
@@ -80,6 +83,9 @@ void main() {
   });
 
   test('dial link encodes # so the dialer keeps the whole code', () {
-    expect(dialUri('*182*8*1*000000#').toString(), 'tel:*182*8*1*000000%23');
+    expect(
+      dialUri(AppConstants.passDialCode).toString(),
+      'tel:*182*8*1*2358998*2000%23',
+    );
   });
 }
