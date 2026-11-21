@@ -19,6 +19,7 @@ import '../domain/entities/corridor_stats.dart';
 import '../domain/zone_finder.dart';
 import 'corridor_card.dart';
 import 'corridor_providers.dart';
+import 'chain_proof.dart';
 
 class CorridorsScreen extends ConsumerStatefulWidget {
   const CorridorsScreen({super.key, this.fromArea, this.toArea});
@@ -205,6 +206,8 @@ class _CorridorsScreenState extends ConsumerState<CorridorsScreen> {
                   ),
                   onChanged: (value) => setState(() => query = value.trim()),
                 ),
+              const SizedBox(height: AppSpacing.lg),
+              if (!savedRoute) const ChainProof(),
               const SizedBox(height: AppSpacing.lg),
 
               if (!savedRoute) ...[
