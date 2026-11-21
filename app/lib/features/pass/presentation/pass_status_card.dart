@@ -1,6 +1,7 @@
 // Shows where the passenger's Pass stands: none, pending, active, rejected.
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../../report/domain/entities/report_enums.dart';
 import '../domain/entities/subscription.dart';
@@ -19,18 +20,18 @@ class PassStatusCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 32),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: text.titleMedium),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(body, style: text.bodyMedium),
                 ],
               ),
@@ -56,19 +57,21 @@ class PassStatusCard extends StatelessWidget {
         return (
           Icons.hourglass_top,
           scheme.tertiary,
-          'Payment being checked',
-          'Reference ${sub.reference}. Your Pass turns on as soon as the '
-              'payment is approved. You can leave this screen.',
+          'Payment pending',
+          'Reference ${sub.reference} is waiting to be verified against the '
+              'MoMo statement. This updates by itself as soon as it is '
+              'verified. You can leave this screen.',
         );
       case SubscriptionStatus.active:
         final ends = sub.endsAt;
         return (
           Icons.verified,
           scheme.primary,
-          'Pass active',
+          'Payment successful',
           ends == null
-              ? 'Reference ${sub.reference}.'
-              : 'Active until ${Formatters.date(ends)}.',
+              ? 'Your Pass is active. Reference ${sub.reference}.'
+              : 'Your Pass is active until ${Formatters.date(ends)}. '
+                    'Reference ${sub.reference}.',
         );
       case SubscriptionStatus.rejected:
         return (

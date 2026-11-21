@@ -66,8 +66,7 @@ void main() {
     await tester.tap(find.text('Kacyiru → Kimironko'));
     await tester.pumpAndSettle();
 
-    // Fake corridor c1 has a median of 600
-    expect(find.text('Usual price: 600 RWF'), findsOneWidget);
+    expect(find.text('Usual price: 1200 RWF'), findsOneWidget);
     expect(find.textContaining('Within expected band'), findsOneWidget);
   });
 

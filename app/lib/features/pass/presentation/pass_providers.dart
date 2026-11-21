@@ -1,26 +1,25 @@
 // Riverpod providers for the pass (subscription) feature.
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/failures.dart';
-import '../data/fake_subscription_repository.dart';
+import '../../auth/presentation/auth_providers.dart';
+import '../data/subscription_repository_impl.dart';
 import '../domain/entities/subscription.dart';
 import '../domain/repositories/subscription_repository.dart';
 import '../domain/usecases/submit_payment_reference.dart';
 
 /// Provider for the SubscriptionRepository implementation.
+///
+/// Always the real Firestore repository, even while other features run on
+/// fake data: a Pass is real money, so the app never shows a made-up one.
+/// Rebuilt on sign in and sign out, so it always reads the current passenger.
 final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
-  if (AppConstants.useFakeData) {
-    // Auto-approve after a few seconds so the pending → active flip can be
-    // seen before E3's approval endpoint exists.
-    final fake = FakeSubscriptionRepository(
-      autoApproveAfter: const Duration(seconds: 5),
-    );
-    ref.onDispose(fake.dispose);
-    return fake;
-  }
-  // TODO(E2): return SubscriptionRepositoryImpl() when real Firestore wiring is ready.
-  throw UnimplementedError('SubscriptionRepositoryImpl not yet implemented');
+  final uid = ref.watch(
+    authStateProvider.select((auth) => auth.valueOrNull?.id),
+  );
+  return SubscriptionRepositoryImpl(FirebaseFirestore.instance, uid: uid);
 });
 
 /// Stream of the current passenger's subscription.
