@@ -10,6 +10,7 @@ import { TrustModule } from './trust/trust.module.js';
 import { EngagementModule } from './engagement/engagement.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { FirebaseModule } from './firebase/firebase.module.js';
+import { NotaryModule } from './notary/notary.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -24,6 +25,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     TrustModule,
     EngagementModule,
     PaymentsModule,
+    NotaryModule,
   ],
   controllers: [AppController],
 })
