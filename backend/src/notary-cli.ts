@@ -11,14 +11,20 @@ async function main() {
   });
 
   const notary = app.get(NotaryService);
+  const command = process.argv[2];
 
-  if (process.argv[2] === 'send') {
+  if (command === 'send') {
     //npm run notary -- send
     const result = await notary.notarize();
     console.log('date:        ' + result.date);
     console.log('fingerprint: ' + result.hash);
     console.log('sent:        ' + result.sent);
     console.log('tx id:       ' + result.txHash);
+    console.log('status:      ' + result.status);
+  } else if (command === 'confirm') {
+    //npm run notary -- confirm
+    const count = await notary.confirmPending();
+    console.log('newly confirmed: ' + count);
   } else {
     //npm run notary
     const result = await notary.todaysFingerprint();

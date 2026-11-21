@@ -14,7 +14,7 @@ class NotarizationRepositoryImpl implements NotarizationRepository {
     //newest first, only need one
     final snapshot = await firestore
         .collection(FirestorePaths.notarizations)
-        .orderBy('createdAt', descending: true)
+        .orderBy('confirmedAt', descending: true)
         .limit(1)
         .get();
 

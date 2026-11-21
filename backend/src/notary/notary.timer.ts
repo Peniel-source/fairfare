@@ -50,6 +50,8 @@ export class NotaryTimer implements OnModuleInit, OnModuleDestroy {
     if (this.busy) return;
     this.busy = true;
     try {
+      //finish any receipt that was still waiting for confirmation
+      await this.notary.confirmPending();
       if (this.hourInKigali() < SEND_FROM_HOUR) return;
       if (await this.notary.alreadyDoneToday()) return;
       const result = await this.notary.notarize();
