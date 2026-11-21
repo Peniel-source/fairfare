@@ -14,6 +14,8 @@ import '../domain/zone_finder.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/zone_impl.dart';
 import '../data/corridor_impl.dart';
+import '../data/notarization_impl.dart';
+import '../data/notarization_repository.dart';
 
 final corridorRepositoryProvider = Provider<CorridorRepository>((ref) {
   if (AppConstants.useFakeData) {
@@ -76,4 +78,15 @@ final zonesProvider = FutureProvider<List<Zone>>((ref) {
 // asks the phone for its location
 final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService();
+});
+
+//the reader of the server's receipts, fake or real
+final notarizationRepositoryProvider = Provider<NotarizationRepository>((ref) {
+  if (AppConstants.useFakeData) return FakeNotarizationRepository();
+  return NotarizationRepositoryImpl(FirebaseFirestore.instance);
+});
+
+//the newest receipt
+final latestNotarizationProvider = FutureProvider<Notarization?>((ref) {
+  return ref.watch(notarizationRepositoryProvider).latest();
 });
