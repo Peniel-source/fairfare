@@ -9,10 +9,10 @@ import {
   type ReportRejectedEvent,
   type ReportVerifiedEvent,
 } from '../events/report-events.js';
-import { afterRejected, afterVerified } from './trust-rules.js';
+import { afterRejected, afterVerified, publicAvatar } from './trust-rules.js';
 
 // E5: moves the trust score on verify/reject and keeps the public
-// leaderboard/{uid} projection (displayName, trustScore) in sync.
+// leaderboard/{uid} projection (displayName, avatar, trustScore) in sync.
 @Injectable()
 export class TrustService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger('TrustService');
@@ -20,22 +20,25 @@ export class TrustService implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly firebase: FirebaseService) {}
 
-  // Passengers can edit their name; the leaderboard copy is backend-only.
+  // Passengers can edit their name and avatar; the leaderboard copy is
+  // backend-only.
   onModuleInit() {
     if (process.env.LEADERBOARD_SYNC === 'off') return;
-    this.unsubscribe = this.firebase.firestore
-      .collection(COLLECTIONS.passengers)
-      .onSnapshot(
-        (snap) => {
-          for (const change of snap.docChanges()) {
-            if (change.type === 'removed') continue;
-            const name = change.doc.get('displayName');
-            if (typeof name !== 'string') continue;
-            void this.syncLeaderboardName(change.doc.id, name);
-          }
-        },
-        (err) => this.logger.error('passenger listener failed', err),
-      );
+    this.unsubscribe = this.firebase.firestore.collection(COLLECTIONS.passengers).onSnapshot(
+      (snap) => {
+        for (const change of snap.docChanges()) {
+          if (change.type === 'removed') continue;
+          const name = change.doc.get('displayName');
+          if (typeof name !== 'string') continue;
+          void this.syncLeaderboardProfile(
+            change.doc.id,
+            name,
+            publicAvatar(change.doc.get('avatar')),
+          );
+        }
+      },
+      (err) => this.logger.error('passenger listener failed', err),
+    );
   }
 
   onModuleDestroy() {
@@ -73,6 +76,7 @@ export class TrustService implements OnModuleInit, OnModuleDestroy {
           boardRef,
           {
             displayName: passenger.get('displayName') ?? '',
+            avatar: publicAvatar(passenger.get('avatar')) ?? FieldValue.delete(),
             trustScore,
             updatedAt: FieldValue.serverTimestamp(),
           },
@@ -84,15 +88,26 @@ export class TrustService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async syncLeaderboardName(passengerId: string, displayName: string) {
+  private async syncLeaderboardProfile(
+    passengerId: string,
+    displayName: string,
+    avatar: string | null,
+  ) {
     const ref = this.firebase.firestore.collection(COLLECTIONS.leaderboard).doc(passengerId);
     try {
       const entry = await ref.get();
       // Only passengers who already have a score appear on the board.
-      if (!entry.exists || entry.get('displayName') === displayName) return;
-      await ref.update({ displayName, updatedAt: FieldValue.serverTimestamp() });
+      if (!entry.exists) return;
+      if (entry.get('displayName') === displayName && (entry.get('avatar') ?? null) === avatar) {
+        return;
+      }
+      await ref.update({
+        displayName,
+        avatar: avatar ?? FieldValue.delete(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
     } catch (err) {
-      this.logger.error(`leaderboard name sync failed for ${passengerId}`, err);
+      this.logger.error(`leaderboard profile sync failed for ${passengerId}`, err);
     }
   }
 }

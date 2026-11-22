@@ -65,9 +65,14 @@ service cloud.firestore {
         && request.resource.data.email == request.auth.token.get('email', '')
         && request.resource.data.email.size() >= 1
         && request.resource.data.createdAt == request.time;
+      // Passengers may change their name and pick an avatar (a preset id
+      // from the app, e.g. 'w03'); everything else is server-owned.
       allow update: if owns(uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName'])
-        && text(request.resource.data.displayName, 80);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'avatar'])
+        && text(request.resource.data.displayName, 80)
+        && (!('avatar' in request.resource.data)
+          || (request.resource.data.avatar is string
+            && request.resource.data.avatar.matches('[wm]0[1-8]')));
 
       match /savedRoutes/{routeId} {
         allow read, delete: if owns(uid);
