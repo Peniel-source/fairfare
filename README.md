@@ -10,7 +10,7 @@ FairFare does not set prices, dispatch drivers, or take commission.
 fairfare/
 ├─ app/        # Flutter mobile app
 ├─ backend/    # NestJS API 
-├─ docs/       # Concept note, engine logic spec, Flutter roadmap
+├─ docs/      
 └─ .github/    # PR template, CI workflows
 ```
 
@@ -29,16 +29,6 @@ flutter run
 
 Check your setup with `flutter doctor`.
 
-## Branch workflow
-
-| Branch | Purpose |
-|---|---|
-| `main` | Production. Always stable and demo-ready. Updated only by merging `dev`. |
-| `dev` | Integration branch. All feature work lands here via pull request. |
-| `feature/*`, `fix/*` | Short-lived working branches, created from `dev`. |
-
-Nobody pushes directly to `main` or `dev`. Every change goes through a pull request with review. See [CONTRIBUTING.md](CONTRIBUTING.md) for the details.
-
 ## Team
 
 1. Eelaf — role
@@ -46,3 +36,5 @@ Nobody pushes directly to `main` or `dev`. Every change goes through a pull requ
 3. Toky  — role
 4. Benjamin — role
 5. Peniel — role
+
+Avatars: Personas by Draftbit, via DiceBear, licensed CC BY 4.0.

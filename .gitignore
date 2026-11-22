@@ -1,0 +1,26 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+.env
+*.env
+.env.*
+# Template with blank values, safe to commit
+!.env.example
+
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Test coverage
+coverage/
+lcov.info
+
+# Firebase service account keys
+*serviceAccount*.json
+*firebase-adminsdk*.json
+*service-account*.json
+*service_account*.json
+
+*-debug.log
