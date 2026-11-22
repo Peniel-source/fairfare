@@ -12,6 +12,7 @@ import 'features/report/presentation/my_reports_screen.dart';
 import 'features/report/presentation/report_screen.dart';
 import 'features/saved_routes/presentation/saved_routes_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
+import 'features/splash/presentation/splash_screen.dart';
 import 'features/wallet/presentation/wallet_screen.dart';
 import 'features/corridors/presentation/corridors_screen.dart';
 
@@ -24,6 +25,9 @@ const kPublicRoutes = {'/', '/login', '/register', '/reset-password'};
 /// Routes that redirect a signed-in user away from them.
 const kAuthOnlyRoutes = {'/', '/login', '/register'};
 
+/// The animated splash, shown first on every launch.
+const kSplashRoute = '/splash';
+
 /// Where a signed-in, verified passenger lands.
 const kHomeRoute = '/home/corridors';
 
@@ -33,6 +37,7 @@ const kVerifyEmailRoute = '/verify-email';
 /// The app's router configuration.
 ///
 /// Routes:
+///  /splash        → Splash (first screen, moves on by itself)
 ///  /              → Landing (signed out)
 ///  /login         → Login
 ///  /register      → Register
@@ -59,7 +64,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: kSplashRoute,
     refreshListenable: refresh,
     redirect: (context, state) =>
         authRedirect(ref.read(authStateProvider), state.matchedLocation),
@@ -72,11 +77,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 /// Pure redirect rule, kept out of the router so it can be unit tested (E6).
 ///
 /// Returns the location to redirect to, or null to stay.
+///  - on the splash: stay; the splash moves on when its animation ends
 ///  - auth state still loading: stay put
 ///  - signed out: public routes only, everything else goes to Landing
 ///  - signed in, email not verified: Verify Email only
 ///  - signed in and verified: auth screens and Verify Email go to Corridors
 String? authRedirect(AsyncValue<AuthUser?> auth, String location) {
+  if (location == kSplashRoute) return null;
   if (auth.isLoading && !auth.hasValue) return null;
 
   final user = auth.value;
@@ -132,6 +139,11 @@ final _routes = <RouteBase>[
     ],
   ),
   // Standalone routes
+  GoRoute(
+    path: kSplashRoute,
+    name: 'splash',
+    builder: (context, state) => const SplashScreen(),
+  ),
   GoRoute(
     path: '/',
     name: 'landing',
