@@ -1,9 +1,9 @@
 // Fake corridor repository with sample data.
 import 'dart:async';
 
-import '../domain/entities/corridor.dart';
-import '../domain/entities/corridor_stats.dart';
-import '../domain/repositories/corridor_repository.dart';
+import 'package:fairfare/features/corridors/domain/entities/corridor.dart';
+import 'package:fairfare/features/corridors/domain/entities/corridor_stats.dart';
+import 'package:fairfare/features/corridors/domain/repositories/corridor_repository.dart';
 
 class FakeCorridorRepository implements CorridorRepository {
   //the routes can be reversed. it's the same thing

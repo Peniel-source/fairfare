@@ -1,9 +1,15 @@
+import '../fakes/fake_data_overrides.dart';
+
 // The splash plays once, then hands over to wherever authRedirect sends the
 // passenger. With animations turned off it moves on after a short hold.
 import 'package:fairfare/core/theme/app_theme.dart';
-import 'package:fairfare/features/auth/data/fake_auth_repository.dart';
+
+import '../fakes/fake_auth_repository.dart';
+
 import 'package:fairfare/features/auth/presentation/auth_providers.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+
+import '../fakes/fake_settings_repository.dart';
+
 import 'package:fairfare/features/settings/presentation/settings_providers.dart';
 import 'package:fairfare/features/splash/presentation/splash_screen.dart';
 import 'package:fairfare/router.dart';
@@ -16,6 +22,7 @@ const _splashLabel = 'FairFare. Fair moto fares in Kigali';
 Future<void> _pumpApp(WidgetTester tester) async {
   final container = ProviderContainer(
     overrides: [
+      ...fakeDataOverrides(),
       authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       settingsRepositoryProvider.overrideWithValue(FakeSettingsRepository()),
     ],

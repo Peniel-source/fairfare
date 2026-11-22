@@ -2,14 +2,18 @@
 import 'dart:async';
 
 import 'package:fairfare/core/theme/app_theme.dart';
-import 'package:fairfare/features/corridors/data/fake_corridor_repository.dart';
+
+import '../fakes/fake_corridor_repository.dart';
+
 import 'package:fairfare/features/corridors/domain/entities/corridor.dart';
 import 'package:fairfare/features/corridors/domain/entities/corridor_stats.dart';
 import 'package:fairfare/features/corridors/domain/repositories/corridor_repository.dart';
 import 'package:fairfare/features/corridors/presentation/corridor_providers.dart';
 import 'package:fairfare/features/corridors/presentation/corridors_screen.dart';
 import 'package:fairfare/features/profile/presentation/profile_providers.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+
+import '../fakes/fake_settings_repository.dart';
+
 import 'package:fairfare/features/settings/presentation/settings_providers.dart';
 import 'package:fairfare/shared/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
