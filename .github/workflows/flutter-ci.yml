@@ -24,6 +24,7 @@ jobs:
       - run: flutter test --coverage
       # Line coverage without generated files
       - name: Coverage
+        shell: bash
         run: |
           awk -F'[:,]' '
             /^SF:/ { skip = ($2 ~ /firebase_options\.dart$|\.g\.dart$/) }
