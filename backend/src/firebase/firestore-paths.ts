@@ -3,6 +3,7 @@ export const COLLECTIONS = {
   savedRoutes: 'savedRoutes',
   corridors: 'corridors',
   corridorStats: 'corridorStats',
+  zones: 'zones',
   reports: 'reports',
   wallets: 'wallets',
   walletEntries: 'walletEntries',

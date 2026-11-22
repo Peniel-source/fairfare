@@ -4,13 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
+import 'features/auth/presentation/auth_screen.dart';
 import 'features/landing/presentation/landing_screen.dart';
 import 'features/pass/presentation/pass_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
 import 'features/report/presentation/my_reports_screen.dart';
 import 'features/report/presentation/report_screen.dart';
+import 'features/saved_routes/presentation/saved_routes_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/wallet/presentation/wallet_screen.dart';
-import 'shared/widgets/home_app_bar.dart';
+import 'features/corridors/presentation/corridors_screen.dart';
 
 /// Top-level navigator key for GoRouter.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -101,8 +104,15 @@ final _routes = <RouteBase>[
       GoRoute(
         path: '/home/corridors',
         name: 'corridors',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Corridors'),
+        builder: (context, state) {
+          final from = state.uri.queryParameters['from'];
+          final to = state.uri.queryParameters['to'];
+          return CorridorsScreen(
+            key: ValueKey((from, to)),
+            fromArea: from,
+            toArea: to,
+          );
+        },
       ),
       GoRoute(
         path: '/home/report',
@@ -130,30 +140,30 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/login',
     name: 'login',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Login'),
+    builder: (context, state) =>
+        const EmailAuthScreen(mode: EmailAuthMode.login),
   ),
   GoRoute(
     path: '/register',
     name: 'register',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Register'),
+    builder: (context, state) =>
+        const EmailAuthScreen(mode: EmailAuthMode.register),
   ),
   GoRoute(
     path: '/reset-password',
     name: 'resetPassword',
     builder: (context, state) =>
-        const _PlaceholderScreen(title: 'Reset Password'),
+        const EmailAuthScreen(mode: EmailAuthMode.resetPassword),
   ),
   GoRoute(
     path: '/verify-email',
     name: 'verifyEmail',
-    builder: (context, state) =>
-        const _PlaceholderScreen(title: 'Verify Email'),
+    builder: (context, state) => const VerifyEmailScreen(),
   ),
   GoRoute(
     path: '/saved-routes',
     name: 'savedRoutes',
-    builder: (context, state) =>
-        const _PlaceholderScreen(title: 'Saved Routes'),
+    builder: (context, state) => const SavedRoutesScreen(),
   ),
   GoRoute(
     path: '/my-reports',
@@ -163,7 +173,7 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/profile',
     name: 'profile',
-    builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+    builder: (context, state) => const ProfileScreen(),
   ),
   GoRoute(
     path: '/settings',
@@ -236,20 +246,6 @@ class _HomeShellState extends State<_HomeShell> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Placeholder screen for each route. Each screen owner replaces this.
-class _PlaceholderScreen extends ConsumerWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: const HomeAppBar(),
-      body: Center(child: Text('$title — coming soon')),
     );
   }
 }

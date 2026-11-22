@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 
 /// tel: link for a USSD code. `#` must be encoded as %23, otherwise the
@@ -16,10 +17,12 @@ class DialPromptCard extends StatelessWidget {
   const DialPromptCard({
     super.key,
     required this.dialCode,
+    required this.merchantCode,
     required this.priceRwf,
   });
 
   final String dialCode;
+  final String merchantCode;
   final int priceRwf;
 
   bool get _canDial =>
@@ -30,25 +33,34 @@ class DialPromptCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final steps = [
       'Dial the code below${_canDial ? ' (or tap Dial)' : ''}.',
-      'Pay ${Formatters.price(priceRwf)} and confirm with your PIN.',
+      'Check MoMo shows merchant $merchantCode and '
+          '${Formatters.price(priceRwf)}, then confirm with your PIN.',
       'Copy the reference from the payment SMS.',
       'Enter it below and tap Submit.',
     ];
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('How to pay', style: text.titleMedium),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'MoMo Pay merchant $merchantCode',
+              style: text.bodyMedium,
+              semanticsLabel: 'Pay to MoMo merchant $merchantCode',
+            ),
+            const SizedBox(height: AppSpacing.sm),
             for (var i = 0; i < steps.length; i++)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xs / 2,
+                ),
                 child: Text('${i + 1}. ${steps[i]}', style: text.bodyMedium),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
@@ -66,7 +78,7 @@ class DialPromptCard extends StatelessWidget {
               ],
             ),
             if (_canDial) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               FilledButton.icon(
                 onPressed: () => _dial(context),
                 icon: const Icon(Icons.phone),
