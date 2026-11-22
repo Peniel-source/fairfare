@@ -14,7 +14,9 @@ import '../../../shared/widgets/loading_view.dart';
 import '../../../shared/widgets/price_stepper.dart';
 import '../../../shared/widgets/segmented_selector.dart';
 import '../../corridors/domain/entities/corridor.dart';
+import '../../corridors/domain/zone_finder.dart';
 import '../../corridors/presentation/corridor_providers.dart';
+import '../../corridors/presentation/route_picker.dart';
 import '../domain/entities/report_enums.dart';
 import '../domain/price_sanity.dart';
 import 'report_banners.dart';
@@ -33,26 +35,26 @@ class ReportScreen extends ConsumerWidget {
       }
     });
 
-    final areas = ref.watch(reportAreasProvider);
+    final zones = ref.watch(zonesProvider);
 
     return Scaffold(
       appBar: const HomeAppBar(),
-      body: areas.when(
-        loading: () => const LoadingView(message: 'Loading routes…'),
+      body: zones.when(
+        loading: () => const LoadingView(message: 'Loading areas…'),
         error: (_, _) => ErrorView(
-          message: 'Could not load the routes. Check your connection.',
-          onRetry: () => ref.invalidate(popularCorridorsProvider),
+          message: 'Could not load the areas. Check your connection.',
+          onRetry: () => ref.invalidate(zonesProvider),
         ),
-        data: (areas) => _ReportForm(areas: areas),
+        data: (zones) => _ReportForm(zones: zones),
       ),
     );
   }
 }
 
 class _ReportForm extends ConsumerWidget {
-  const _ReportForm({required this.areas});
+  const _ReportForm({required this.zones});
 
-  final List<String> areas;
+  final List<Zone> zones;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,7 +71,7 @@ class _ReportForm extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             const _RecentRoutes(),
             const SizedBox(height: AppSpacing.md),
-            _RouteCard(areas: areas),
+            _RouteCard(zones: zones),
             const SizedBox(height: AppSpacing.md),
             const _PriceCard(),
             const SizedBox(height: AppSpacing.md),
@@ -211,7 +213,7 @@ class _RecentRoutes extends ConsumerWidget {
             for (final route in routes)
               ActionChip(
                 avatar: const Icon(Icons.history, size: 18),
-                label: Text('${route.fromArea} → ${route.toArea}'),
+                label: Text(route.label),
                 onPressed: () => notifier.applyRoute(route),
               ),
           ],
@@ -222,23 +224,24 @@ class _RecentRoutes extends ConsumerWidget {
 }
 
 class _RouteCard extends ConsumerWidget {
-  const _RouteCard({required this.areas});
+  const _RouteCard({required this.zones});
 
-  final List<String> areas;
+  final List<Zone> zones;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.watch(reportFormProvider);
-    final corridor = ref.watch(selectedCorridorProvider);
     final notifier = ref.read(reportFormProvider.notifier);
     final error = form.showErrors
-        ? routeError(
-            pickup: form.pickup,
-            dropoff: form.dropoff,
-            corridor: corridor,
-          )
+        ? routeError(pickup: form.pickup, dropoff: form.dropoff)
         : null;
     final theme = Theme.of(context);
+    // White fields on the tan card
+    final fieldTheme = theme.copyWith(
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        fillColor: theme.colorScheme.surfaceContainerLowest,
+      ),
+    );
 
     return AppCard(
       child: Column(
@@ -246,29 +249,18 @@ class _RouteCard extends ConsumerWidget {
         children: [
           const _Eyebrow('Corridor segment'),
           const SizedBox(height: AppSpacing.md),
-          _AreaField(
-            key: ValueKey('pickup-${form.pickup}'),
-            badge: 'A',
-            label: 'Pickup point',
-            areas: areas,
-            value: form.pickup,
-            onSelected: notifier.setPickup,
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              tooltip: 'Swap pickup and drop-off',
-              icon: const Icon(Icons.swap_vert),
-              onPressed: notifier.swapRoute,
+          Theme(
+            data: fieldTheme,
+            child: RoutePicker(
+              zones: zones,
+              pickup: form.pickup,
+              dropoff: form.dropoff,
+              onPickup: notifier.setPickup,
+              onDropoff: notifier.setDropoff,
+              onSwap: notifier.swapRoute,
+              onUseLocation: () => _useLocation(context, ref),
+              findingLocation: form.isLocating,
             ),
-          ),
-          _AreaField(
-            key: ValueKey('dropoff-${form.dropoff}'),
-            badge: 'B',
-            label: 'Drop-off area',
-            areas: areas,
-            value: form.dropoff,
-            onSelected: notifier.setDropoff,
           ),
           if (error != null) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -283,64 +275,13 @@ class _RouteCard extends ConsumerWidget {
       ),
     );
   }
-}
 
-/// Area dropdown with the A or B badge
-class _AreaField extends StatelessWidget {
-  const _AreaField({
-    super.key,
-    required this.badge,
-    required this.label,
-    required this.areas,
-    required this.value,
-    required this.onSelected,
-  });
-
-  final String badge;
-  final String label;
-  final List<String> areas;
-  final String? value;
-  final ValueChanged<String?> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    // White fields on the tan card
-    final fieldTheme = theme.copyWith(
-      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
-        fillColor: scheme.surfaceContainerLowest,
-      ),
-    );
-
-    return Theme(
-      data: fieldTheme,
-      child: DropdownMenu<String>(
-        initialSelection: value,
-        expandedInsets: EdgeInsets.zero,
-        enableFilter: true,
-        requestFocusOnTap: true,
-        label: Text(label),
-        leadingIcon: Padding(
-          padding: const EdgeInsets.all(AppSpacing.sm),
-          child: CircleAvatar(
-            radius: 14,
-            backgroundColor: scheme.primary,
-            foregroundColor: scheme.onPrimary,
-            child: Text(
-              badge,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: scheme.onPrimary,
-              ),
-            ),
-          ),
-        ),
-        dropdownMenuEntries: [
-          for (final area in areas) DropdownMenuEntry(value: area, label: area),
-        ],
-        onSelected: onSelected,
-      ),
-    );
+  Future<void> _useLocation(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final message = await ref.read(reportFormProvider.notifier).useMyLocation();
+    if (message != null) {
+      messenger.showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 }
 
