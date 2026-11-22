@@ -36,6 +36,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // Let the fake corridors finish their delay
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
   }
 
   Future<void> tapSubmit(WidgetTester tester) async {
