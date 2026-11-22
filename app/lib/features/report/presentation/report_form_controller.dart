@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../corridors/data/location_service.dart';
 import '../../corridors/domain/entities/corridor.dart';
 import '../../corridors/domain/entities/corridor_stats.dart';
+import '../../corridors/domain/zone_finder.dart';
 import '../../corridors/presentation/corridor_providers.dart';
 import '../../settings/presentation/settings_providers.dart';
 import '../domain/entities/new_report.dart';
@@ -27,8 +31,8 @@ class SubmittedReport {
 }
 
 class ReportFormState {
-  final String? pickup;
-  final String? dropoff;
+  final Zone? pickup;
+  final Zone? dropoff;
   final int? price;
   final TimeSegment timeSegment;
   final Weather weather;
@@ -36,6 +40,7 @@ class ReportFormState {
   /// Show Errors after attempt
   final bool showErrors;
   final bool isSubmitting;
+  final bool isLocating;
   final SubmittedReport? submitted;
 
   const ReportFormState({
@@ -46,17 +51,19 @@ class ReportFormState {
     this.weather = Weather.clear,
     this.showErrors = false,
     this.isSubmitting = false,
+    this.isLocating = false,
     this.submitted,
   });
 
   ReportFormState copyWith({
-    String? Function()? pickup,
-    String? Function()? dropoff,
+    Zone? Function()? pickup,
+    Zone? Function()? dropoff,
     int? Function()? price,
     TimeSegment? timeSegment,
     Weather? weather,
     bool? showErrors,
     bool? isSubmitting,
+    bool? isLocating,
     SubmittedReport? Function()? submitted,
   }) {
     return ReportFormState(
@@ -67,41 +74,57 @@ class ReportFormState {
       weather: weather ?? this.weather,
       showErrors: showErrors ?? this.showErrors,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isLocating: isLocating ?? this.isLocating,
       submitted: submitted != null ? submitted() : this.submitted,
     );
   }
 }
 
 /// Error for the route
-String? routeError({
-  required String? pickup,
-  required String? dropoff,
-  required Corridor? corridor,
-}) {
+String? routeError({required Zone? pickup, required Zone? dropoff}) {
   if (pickup == null || dropoff == null) {
     return 'Choose where you got on and where you got off';
   }
-  if (pickup == dropoff) return 'Pickup and drop-off must be different areas';
-  if (corridor == null) {
-    return 'FairFare does not track this route yet. Try the nearest area';
+  if (pickup.id == dropoff.id) {
+    return 'Pickup and drop-off must be different areas';
   }
   return null;
 }
 
-/// The corridor that goes from pickup to dropoff
-Corridor? findCorridor(
-  List<Corridor> corridors,
-  String? pickup,
-  String? dropoff,
-) {
-  if (pickup == null || dropoff == null) return null;
-  for (final corridor in corridors) {
-    if (corridor.fromArea == pickup && corridor.toArea == dropoff) {
-      return corridor;
-    }
+/// Corridor id is pickupId-dropoffId
+String corridorIdFor(Zone pickup, Zone dropoff) => '${pickup.id}-${dropoff.id}';
+
+/// The corridor between two different zones
+Corridor? corridorFor(Zone? pickup, Zone? dropoff) {
+  if (pickup == null || dropoff == null || pickup.id == dropoff.id) {
+    return null;
   }
-  return null;
+  return Corridor(
+    id: corridorIdFor(pickup, dropoff),
+    fromArea: pickup.name,
+    toArea: dropoff.name,
+  );
 }
+
+/// A pickup and dropoff pair for the quick load chips
+class RouteChoice {
+  final Zone pickup;
+  final Zone dropoff;
+
+  const RouteChoice(this.pickup, this.dropoff);
+
+  String get label => '${pickup.name} → ${dropoff.name}';
+}
+
+/// Message when the location could not be used
+String locationErrorMessage(LocationStatus status) => switch (status) {
+  LocationStatus.serviceOff =>
+    'Location is turned off. Turn it on or search an area',
+  LocationStatus.denied => 'Location was not allowed. You can search an area',
+  LocationStatus.deniedForever =>
+    'Location is blocked for this app. Turn it on in your phone settings',
+  _ => 'Could not find your location. Search an area instead',
+};
 
 /// Price chips
 List<int> quickPrices(CorridorStats? stats) {
@@ -129,9 +152,9 @@ class ReportFormController extends AutoDisposeNotifier<ReportFormState> {
     return ReportFormState(timeSegment: segment);
   }
 
-  void setPickup(String? area) => state = state.copyWith(pickup: () => area);
+  void setPickup(Zone zone) => state = state.copyWith(pickup: () => zone);
 
-  void setDropoff(String? area) => state = state.copyWith(dropoff: () => area);
+  void setDropoff(Zone zone) => state = state.copyWith(dropoff: () => zone);
 
   void swapRoute() => state = state.copyWith(
     pickup: () => state.dropoff,
@@ -139,10 +162,33 @@ class ReportFormController extends AutoDisposeNotifier<ReportFormState> {
   );
 
   /// Fills both route fields from a quick load chip
-  void applyRoute(Corridor corridor) => state = state.copyWith(
-    pickup: () => corridor.fromArea,
-    dropoff: () => corridor.toArea,
+  void applyRoute(RouteChoice route) => state = state.copyWith(
+    pickup: () => route.pickup,
+    dropoff: () => route.dropoff,
   );
+
+  /// Sets the pickup to the nearest zone, returns a message if it fails
+  Future<String?> useMyLocation() async {
+    if (state.isLocating) return null;
+    state = state.copyWith(isLocating: true);
+    try {
+      final result = await ref.read(locationServiceProvider).getLocation();
+      if (result.status != LocationStatus.found) {
+        return locationErrorMessage(result.status);
+      }
+      final zones = await ref.read(zonesProvider.future);
+      final zone = findNearestZone(result.latitude!, result.longitude!, zones);
+      if (zone == null) {
+        return 'You are not near a FairFare area. Search an area instead';
+      }
+      state = state.copyWith(pickup: () => zone);
+      return null;
+    } catch (_) {
+      return locationErrorMessage(LocationStatus.failed);
+    } finally {
+      state = state.copyWith(isLocating: false);
+    }
+  }
 
   void setPrice(int? price) => state = state.copyWith(price: () => price);
 
@@ -157,15 +203,9 @@ class ReportFormController extends AutoDisposeNotifier<ReportFormState> {
   /// Validates and submits
   Future<bool> submit() async {
     if (state.isSubmitting) return false;
-    final corridors = ref.read(popularCorridorsProvider).value ?? const [];
-    final corridor = findCorridor(corridors, state.pickup, state.dropoff);
+    final corridor = corridorFor(state.pickup, state.dropoff);
     final hasErrors =
-        routeError(
-              pickup: state.pickup,
-              dropoff: state.dropoff,
-              corridor: corridor,
-            ) !=
-            null ||
+        routeError(pickup: state.pickup, dropoff: state.dropoff) != null ||
         priceSanityError(state.price) != null;
     if (hasErrors) {
       state = state.copyWith(showErrors: true);
@@ -201,24 +241,11 @@ class ReportFormController extends AutoDisposeNotifier<ReportFormState> {
   }
 }
 
-/// Area names the passenger can pick
-final reportAreasProvider = Provider.autoDispose<AsyncValue<List<String>>>((
-  ref,
-) {
-  return ref.watch(popularCorridorsProvider).whenData((corridors) {
-    final areas = {
-      for (final c in corridors) ...[c.fromArea, c.toArea],
-    };
-    return areas.toList()..sort();
-  });
-});
-
-/// The tracked corridor matching the chosen pickup and drop-off
+/// The corridor for the chosen pickup and drop-off
 final selectedCorridorProvider = Provider.autoDispose<Corridor?>((ref) {
   final pickup = ref.watch(reportFormProvider.select((s) => s.pickup));
   final dropoff = ref.watch(reportFormProvider.select((s) => s.dropoff));
-  final corridors = ref.watch(popularCorridorsProvider).value ?? const [];
-  return findCorridor(corridors, pickup, dropoff);
+  return corridorFor(pickup, dropoff);
 });
 
 /// Live stats of the chosen corridor.
@@ -230,21 +257,30 @@ final selectedCorridorStatsProvider =
     });
 
 /// Routes from the passenger's latest reports (up to 3)
-final recentRoutesProvider = Provider.autoDispose<List<Corridor>>((ref) {
-  final corridors = ref.watch(popularCorridorsProvider).value ?? const [];
+final recentRoutesProvider = Provider.autoDispose<List<RouteChoice>>((ref) {
+  final zones = ref.watch(zonesProvider).value ?? const <Zone>[];
   final reports = ref.watch(myReportsProvider).value ?? const <Report>[];
-  final byId = {for (final c in corridors) c.id: c};
+  final popular = ref.watch(popularCorridorsProvider).value ?? const [];
+  final byId = {
+    for (final a in zones)
+      for (final b in zones)
+        if (a.id != b.id) corridorIdFor(a, b): RouteChoice(a, b),
+  };
   final newestFirst = [...reports]
     ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-  final seen = <String>{};
-  final recent = <Corridor>[];
+  final recent = <String>[];
   for (final report in newestFirst) {
-    final corridor = byId[report.corridorId];
-    if (corridor != null && seen.add(corridor.id)) recent.add(corridor);
+    if (byId.containsKey(report.corridorId) &&
+        !recent.contains(report.corridorId)) {
+      recent.add(report.corridorId);
+    }
     if (recent.length == 3) break;
   }
-  return recent.isEmpty ? corridors.take(2).toList() : recent;
+  if (recent.isEmpty) {
+    recent.addAll(popular.map((c) => c.id).where(byId.containsKey).take(2));
+  }
+  return [for (final id in recent) byId[id]!];
 });
 
 /// The report submitted from this screen
@@ -266,7 +302,15 @@ final submittedReportProvider = Provider.autoDispose<Report?>((ref) {
 });
 
 /// Ticks once a minute so the countdown stays current
-final minuteClockProvider = StreamProvider.autoDispose<DateTime>((ref) async* {
-  yield DateTime.now();
-  yield* Stream.periodic(const Duration(minutes: 1), (_) => DateTime.now());
+final minuteClockProvider = StreamProvider.autoDispose<DateTime>((ref) {
+  final controller = StreamController<DateTime>()..add(DateTime.now());
+  final timer = Timer.periodic(
+    const Duration(minutes: 1),
+    (_) => controller.add(DateTime.now()),
+  );
+  ref.onDispose(() {
+    timer.cancel();
+    controller.close();
+  });
+  return controller.stream;
 });
