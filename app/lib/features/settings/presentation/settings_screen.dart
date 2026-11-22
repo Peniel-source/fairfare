@@ -259,7 +259,7 @@ class _AccountCard extends ConsumerWidget {
     if (confirmed != true) return;
     // Signs out of Firebase, and of Google when it was used (D2). The router
     // listens to the auth state and sends the passenger to Landing. Providers
-    // holding a passenger's data (pass, profile, saved routes) watch
+    // holding a passenger's data (wallet, pass, profile, saved routes) watch
     // the signed-in uid, so they rebuild empty and the next user starts clean.
     final controller = ref.read(authControllerProvider.notifier);
     final signedOut = await controller.signOut();
