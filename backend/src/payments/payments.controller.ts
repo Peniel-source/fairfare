@@ -16,7 +16,8 @@ import { PaymentsService } from './payments.service.js';
 //   curl -X POST -H "x-admin-key: $ADMIN_KEY" http://localhost:3000/payments/<REFERENCE>/approve
 //   curl -X POST -H "x-admin-key: $ADMIN_KEY" http://localhost:3000/payments/<REFERENCE>/reject
 // 200 = done, 401 = wrong key, 404 = unknown reference, 409 = not pending.
-const REFERENCE = /^[A-Z0-9]{6,20}$/;
+// MoMo transaction ids are numbers only.
+const REFERENCE = /^[0-9]{6,20}$/;
 
 @Controller('payments')
 @UseGuards(AdminKeyGuard)
@@ -41,11 +42,11 @@ export class PaymentsController {
   }
 }
 
-// Same format the rules enforce on subscription ids.
+// Same format the app accepts (the rules allow a wider [A-Z0-9]{6,20}).
 function checked(reference: string): string {
-  const normalized = reference.trim().toUpperCase();
+  const normalized = reference.replace(/\s+/g, '');
   if (!REFERENCE.test(normalized)) {
-    throw new BadRequestException('reference must be 6 to 20 letters or digits');
+    throw new BadRequestException('reference must be 6 to 20 digits');
   }
   return normalized;
 }

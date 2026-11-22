@@ -4,12 +4,15 @@ import { formatPending, interpret, parseArgs } from './payments-cli.js';
 describe('payments admin script', () => {
   it('parses list, approve and reject', () => {
     expect(parseArgs(['list'])).toEqual({ command: 'list' });
-    expect(parseArgs(['approve', ' abc123 '])).toEqual({ command: 'approve', reference: 'ABC123' });
-    expect(parseArgs(['reject', 'XYZ789'])).toEqual({ command: 'reject', reference: 'XYZ789' });
+    expect(parseArgs(['approve', '7654321 '])).toEqual({
+      command: 'approve',
+      reference: '7654321',
+    });
+    expect(parseArgs(['reject', '8888888'])).toEqual({ command: 'reject', reference: '8888888' });
   });
 
   it('refuses anything else with the usage line', () => {
-    for (const argv of [[], ['approve'], ['delete', 'ABC123'], ['list', 'extra']]) {
+    for (const argv of [[], ['approve'], ['delete', '7654321'], ['list', 'extra']]) {
       expect(parseArgs(argv)).toHaveProperty('error');
     }
   });
@@ -18,7 +21,7 @@ describe('payments admin script', () => {
     expect(formatPending([])).toBe('No pending payments.');
     const out = formatPending([
       {
-        reference: 'ABC123',
+        reference: '7654321',
         amount: 2000,
         passengerId: 'p1',
         email: 'a@x.rw',
@@ -26,14 +29,14 @@ describe('payments admin script', () => {
       },
     ]);
     expect(out).toContain('1 pending:');
-    expect(out).toContain('ABC123');
+    expect(out).toContain('7654321');
     expect(out).toContain('Aline <a@x.rw>');
   });
 });
 
 describe('payments admin script: server answers', () => {
   const base = 'http://localhost:3000';
-  const approve = { command: 'approve' as const, reference: 'ABC123' };
+  const approve = { command: 'approve' as const, reference: '7654321' };
 
   it('shows the list and a real approval', () => {
     expect(interpret({ command: 'list' }, 200, 'OK', [], base)).toEqual({
@@ -44,10 +47,10 @@ describe('payments admin script: server answers', () => {
       approve,
       200,
       'OK',
-      { reference: 'ABC123', status: 'active', endsAt: 'X' },
+      { reference: '7654321', status: 'active', endsAt: 'X' },
       base,
     );
-    expect(done).toEqual({ ok: true, text: 'approved ABC123: Pass active until X' });
+    expect(done).toEqual({ ok: true, text: 'approved 7654321: Pass active until X' });
   });
 
   it('refuses a web page or any other app on the port', () => {
@@ -59,15 +62,15 @@ describe('payments admin script: server answers', () => {
   });
 
   it('refuses an approval reply for a different reference', () => {
-    const other = { reference: 'OTHER1', status: 'active' };
+    const other = { reference: '9999999', status: 'active' };
     expect(interpret(approve, 200, 'OK', other, base).ok).toBe(false);
   });
 
   it('shows the backend error message', () => {
-    const conflict = { message: 'subscription ABC123 is active, not pending' };
+    const conflict = { message: 'subscription 7654321 is active, not pending' };
     expect(interpret(approve, 409, 'Conflict', conflict, base)).toEqual({
       ok: false,
-      text: '409: subscription ABC123 is active, not pending',
+      text: '409: subscription 7654321 is active, not pending',
     });
   });
 });

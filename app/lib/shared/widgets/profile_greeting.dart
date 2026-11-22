@@ -2,7 +2,7 @@
 // Clean Architecture data flow.
 //
 // Data flow:
-//   Passenger entity → ProfileRepository interface → FakeProfileRepository
+//   Passenger entity → ProfileRepository interface → ProfileRepositoryImpl
 //   → profile_providers.dart (meProvider) → this widget
 //
 // How to add a feature the same way (the architecture pattern):

@@ -31,7 +31,7 @@ describe('PaymentsService.approve', () => {
       amount: 2000,
     });
     const result = await new PaymentsService(service).approve(
-      'ABC123',
+      '7654321',
       new Date('2026-11-01T00:00:00Z'),
     );
     expect(result.status).toBe('active');
@@ -44,17 +44,19 @@ describe('PaymentsService.approve', () => {
       status: 'pending',
       amount: 1_000_000,
     });
-    await expect(new PaymentsService(service).approve('ABC123')).rejects.toThrow(ConflictException);
+    await expect(new PaymentsService(service).approve('7654321')).rejects.toThrow(
+      ConflictException,
+    );
     expect(writes).toEqual([]);
   });
 
   it('refuses a reference that is not pending or does not exist', async () => {
     const active = fakeFirebase({ status: 'active', amount: 2000 });
-    await expect(new PaymentsService(active.service).approve('ABC123')).rejects.toThrow(
+    await expect(new PaymentsService(active.service).approve('7654321')).rejects.toThrow(
       ConflictException,
     );
     const missing = fakeFirebase();
-    await expect(new PaymentsService(missing.service).approve('ABC123')).rejects.toThrow(
+    await expect(new PaymentsService(missing.service).approve('7654321')).rejects.toThrow(
       NotFoundException,
     );
   });
@@ -63,7 +65,7 @@ describe('PaymentsService.approve', () => {
 describe('PaymentsService.listPending', () => {
   it('lists pending payments with the passenger email and name', async () => {
     const pendingDoc = {
-      id: 'ABC123',
+      id: '7654321',
       get: (f: string) => ({ passengerId: 'p1', amount: 2000 })[f],
     };
     const passenger = {
@@ -85,7 +87,7 @@ describe('PaymentsService.listPending', () => {
     } as unknown as FirebaseService).listPending();
     expect(rows).toEqual([
       {
-        reference: 'ABC123',
+        reference: '7654321',
         amount: 2000,
         passengerId: 'p1',
         email: 'a@x.rw',
