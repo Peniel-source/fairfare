@@ -33,6 +33,12 @@ erDiagram
         string label
         timestamp createdAt
     }
+    ZONE {
+        string documentId PK
+        string name
+        double latitude
+        double longitude
+    }
     CORRIDOR {
         string documentId PK
         string fromArea
@@ -125,6 +131,7 @@ erDiagram
 |---|---|---|---|---|
 | Passenger | `passengers/{uid}` | Creates `displayName`, `email`, `createdAt`; updates `displayName` | `trustScore`, `streak`, `badges`, `verifiedCount`, `lastReportDate`; optional `phone` and email synchronization | Owner |
 | Saved route | `passengers/{uid}/savedRoutes/{routeId}` | Creates `fromArea`, `toArea`, `label`, `createdAt`; edits areas/label; deletes own route | None required | Owner |
+| Zone | `zones/{zoneId}` | None | `name`, `latitude`, `longitude` | Public |
 | Corridor | `corridors/{corridorId}` | None | `fromArea`, `toArea`, `isSeeded`, `createdAt` | Public |
 | Corridor statistics | `corridorStats/{corridorId}` | None | `median`, `low`, `high`, `sampleSize`, `confidence`, `windowDays`, `updatedAt` | Public |
 | Report | `reports/{reportId}` | Creates `passengerId`, `corridorId`, `price`, `timeSegment`, `weather`, `createdAt`, `status: pending`; edits price or deletes only while pending | `status` changes, `reason`, `verifiedAt`, `processedAt`, `isSeeded`; all seed-report fields | Owner |
@@ -137,6 +144,8 @@ erDiagram
 | Notarization | `notarizations/{notarizationId}` | None | `hash`, `txId`, `periodStart`, `periodEnd`, `createdAt` | Public |
 
 `documentId` and saved-route `ownerUid` represent document-path keys, not stored fields. Timestamps are Firestore Timestamps. The domain layer represents them as `DateTime` values. The table defines the access contract for B2 security rules.
+
+Zone document IDs are the lowercase names, for example `Kacyiru` becomes `zones/kacyiru`. The backend seeds the zones used for pickup and drop-off choices. Clients can read them without signing in but cannot create, edit, or delete them.
 
 ## Report creation
 

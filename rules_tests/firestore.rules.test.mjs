@@ -109,6 +109,7 @@ beforeEach(async () => {
     'passengers/bob': profile('bob'),
     'passengers/alice/savedRoutes/route_a': route,
     'passengers/bob/savedRoutes/route_b': route,
+    'zones/kacyiru': { name: 'Kacyiru', latitude: -1.9376, longitude: 30.0805 },
     'corridors/kacyiru_kimironko': { fromArea: 'Kacyiru', toArea: 'Kimironko', isSeeded: true, createdAt: at },
     'corridorStats/kacyiru_kimironko': { median: 1000, low: 800, high: 1200, sampleSize: 5, confidence: 'limited', windowDays: 14, updatedAt: at },
     'notarizations/stamp': { hash: 'abc', txId: 'testnet', periodStart: at, periodEnd: at, createdAt: at },
@@ -147,6 +148,24 @@ for (const path of ['corridors/kacyiru_kimironko', 'corridorStats/kacyiru_kimiro
     await assertFails(deleteDoc(ref));
     await assertFails(setDoc(doc(client(), `${path.split('/')[0]}/new`), { extra: true }));
     await assertFails(setDoc(doc(anonymous, `${path.split('/')[0]}/new`), { extra: true }));
+  });
+}
+
+for (const uid of [null, 'alice']) {
+  test(`zones: ${uid ?? 'anonymous'} can read and list but cannot write`, async () => {
+    const db = client(uid);
+    const ref = doc(db, 'zones/kacyiru');
+    const zone = await assertSucceeds(getDoc(ref));
+    assert.equal(zone.id, zone.data().name.toLowerCase());
+    assert.equal(typeof zone.data().latitude, 'number');
+    assert.equal(typeof zone.data().longitude, 'number');
+    const zones = await assertSucceeds(getDocs(collection(db, 'zones')));
+    assert.equal(zones.size, 1);
+    await assertFails(setDoc(doc(db, 'zones/masaka'), {
+      name: 'Masaka', latitude: -2.0223, longitude: 30.2032,
+    }));
+    await assertFails(updateDoc(ref, { latitude: 0 }));
+    await assertFails(deleteDoc(ref));
   });
 }
 
