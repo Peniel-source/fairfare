@@ -10,17 +10,6 @@ class FakeReportRepository implements ReportRepository {
   final _controller = StreamController<List<Report>>.broadcast();
   final _reports = <Report>[
     Report(
-      id: 'r1',
-      passengerId: 'fake_user_1',
-      corridorId: 'c1',
-      price: 600,
-      timeSegment: TimeSegment.morning,
-      weather: Weather.clear,
-      status: ReportStatus.verified,
-      createdAt: DateTime(2026, 10, 25),
-      verifiedAt: DateTime(2026, 10, 25, 12),
-    ),
-    Report(
       id: 'r2',
       passengerId: 'fake_user_1',
       corridorId: 'c2',
@@ -28,7 +17,39 @@ class FakeReportRepository implements ReportRepository {
       timeSegment: TimeSegment.evening,
       weather: Weather.clear,
       status: ReportStatus.pending,
-      createdAt: DateTime(2026, 10, 26),
+      createdAt: DateTime.now().subtract(const Duration(hours: 6)),
+    ),
+    Report(
+      id: 'r1',
+      passengerId: 'fake_user_1',
+      corridorId: 'c1',
+      price: 600,
+      timeSegment: TimeSegment.morning,
+      weather: Weather.clear,
+      status: ReportStatus.verified,
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+      verifiedAt: DateTime.now().subtract(const Duration(days: 1)),
+    ),
+    Report(
+      id: 'r3',
+      passengerId: 'fake_user_1',
+      corridorId: 'c3',
+      price: 3000,
+      timeSegment: TimeSegment.midday,
+      weather: Weather.clear,
+      status: ReportStatus.rejected,
+      reason: 'Price is far above the usual range for this route',
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+    ),
+    Report(
+      id: 'r4',
+      passengerId: 'fake_user_1',
+      corridorId: 'c5',
+      price: 800,
+      timeSegment: TimeSegment.lateNight,
+      weather: Weather.heavyRain,
+      status: ReportStatus.expired,
+      createdAt: DateTime.now().subtract(const Duration(days: 9)),
     ),
   ];
 

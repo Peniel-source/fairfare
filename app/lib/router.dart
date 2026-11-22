@@ -6,6 +6,7 @@ import 'features/auth/domain/entities/auth_user.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'features/landing/presentation/landing_screen.dart';
 import 'features/pass/presentation/pass_screen.dart';
+import 'features/report/presentation/my_reports_screen.dart';
 import 'features/report/presentation/report_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
 import 'features/wallet/presentation/wallet_screen.dart';
@@ -157,7 +158,7 @@ final _routes = <RouteBase>[
   GoRoute(
     path: '/my-reports',
     name: 'myReports',
-    builder: (context, state) => const _PlaceholderScreen(title: 'My Reports'),
+    builder: (context, state) => const MyReportsScreen(),
   ),
   GoRoute(
     path: '/profile',

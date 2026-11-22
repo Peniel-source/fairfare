@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../corridors/domain/entities/corridor.dart';
@@ -266,7 +268,15 @@ final submittedReportProvider = Provider.autoDispose<Report?>((ref) {
 });
 
 /// Ticks once a minute so the countdown stays current
-final minuteClockProvider = StreamProvider.autoDispose<DateTime>((ref) async* {
-  yield DateTime.now();
-  yield* Stream.periodic(const Duration(minutes: 1), (_) => DateTime.now());
+final minuteClockProvider = StreamProvider.autoDispose<DateTime>((ref) {
+  final controller = StreamController<DateTime>()..add(DateTime.now());
+  final timer = Timer.periodic(
+    const Duration(minutes: 1),
+    (_) => controller.add(DateTime.now()),
+  );
+  ref.onDispose(() {
+    timer.cancel();
+    controller.close();
+  });
+  return controller.stream;
 });
