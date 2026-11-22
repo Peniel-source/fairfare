@@ -47,7 +47,11 @@ class _AvatarPickerSheetState extends ConsumerState<_AvatarPickerSheet> {
     final id = _selected;
     if (id == null) return;
     final ok = await ref.read(chooseAvatarControllerProvider.notifier).save(id);
-    if (ok && mounted) Navigator.of(context).pop(true);
+    // Close only if the sheet is still open: if the passenger already closed
+    // it, popping again would close the screen underneath.
+    if (ok && mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override

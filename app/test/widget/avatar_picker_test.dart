@@ -1,5 +1,7 @@
 // A passenger with no avatar sees their initials and is invited to choose
 // one; nothing is picked for them. Saving shows the choice everywhere.
+import 'dart:async';
+
 import 'package:fairfare/core/theme/app_theme.dart';
 import 'package:fairfare/features/profile/domain/entities/passenger.dart';
 import 'package:fairfare/features/profile/presentation/profile_providers.dart';
@@ -58,4 +60,62 @@ void main() {
     final header = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
     expect(header.avatar, 'w03');
   });
+
+  testWidgets('closing the sheet while saving is safe, and the save finishes', (
+    tester,
+  ) async {
+    final repo = _HeldProfileRepository(
+      me: const Passenger(
+        id: 'fake_user_1',
+        displayName: 'Aline Uwase',
+        email: 'aline@example.com',
+      ),
+    );
+    addTearDown(repo.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [profileRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp(
+          theme: AppTheme.light(useGoogleFonts: false),
+          home: const ProfileScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Choose your avatar').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('avatar-m02')));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Save avatar'));
+    await tester.pump();
+
+    // Close the sheet (back button) while the write is held, and let it go.
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('WOMEN'), findsNothing);
+
+    // Now the write completes: no error, Profile stays open, choice shows.
+    repo.release.complete();
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    final header = tester.widget<UserAvatar>(find.byType(UserAvatar).first);
+    expect(header.avatar, 'm02');
+  });
+}
+
+/// Holds avatar writes until [release] completes.
+class _HeldProfileRepository extends FakeProfileRepository {
+  _HeldProfileRepository({super.me});
+
+  final release = Completer<void>();
+
+  @override
+  Future<void> updateAvatar(String avatarId) async {
+    await release.future;
+    return super.updateAvatar(avatarId);
+  }
 }
