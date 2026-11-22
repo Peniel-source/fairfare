@@ -1,4 +1,6 @@
 import 'package:fairfare/core/theme/app_theme.dart';
+import 'package:fairfare/features/auth/data/fake_auth_repository.dart';
+import 'package:fairfare/features/auth/presentation/auth_providers.dart';
 import 'package:fairfare/features/report/data/fake_report_repository.dart';
 import 'package:fairfare/features/report/presentation/report_providers.dart';
 import 'package:fairfare/features/report/presentation/report_screen.dart';
@@ -21,6 +23,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
           reportRepositoryProvider.overrideWithValue(reports),
           settingsRepositoryProvider.overrideWithValue(
             FakeSettingsRepository(),
