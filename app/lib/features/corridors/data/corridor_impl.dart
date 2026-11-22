@@ -64,19 +64,19 @@ class CorridorRepositoryImpl implements CorridorRepository {
         .doc(corridorId)
         .snapshots()
         .map((doc) {
-      //no stats yet means nobody reported this route
-      if (!doc.exists) return null;
-      final updated = doc.get('updatedAt') as Timestamp?;
-      return CorridorStats(
-        corridorId: corridorId,
-        median: (doc.get('median') as num).toInt(),
-        low: (doc.get('low') as num).toInt(),
-        high: (doc.get('high') as num).toInt(),
-        sampleSize: (doc.get('sampleSize') as num).toInt(),
-        confidence: doc.get('confidence') as String,
-        updatedAt: updated?.toDate() ?? DateTime.now(),
-      );
-    });
+          //no stats yet means nobody reported this route
+          if (!doc.exists) return null;
+          final updated = doc.get('updatedAt') as Timestamp?;
+          return CorridorStats(
+            corridorId: corridorId,
+            median: (doc.get('median') as num).toInt(),
+            low: (doc.get('low') as num).toInt(),
+            high: (doc.get('high') as num).toInt(),
+            sampleSize: (doc.get('sampleSize') as num).toInt(),
+            confidence: doc.get('confidence') as String,
+            updatedAt: updated?.toDate() ?? DateTime.now(),
+          );
+        });
   }
 
   @override

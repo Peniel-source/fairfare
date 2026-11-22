@@ -16,8 +16,10 @@ void main() {
   ) async {
     final auth = FakeAuthRepository();
     final container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(auth),
-        settingsRepositoryProvider.overrideWithValue(FakeSettingsRepository()),],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        settingsRepositoryProvider.overrideWithValue(FakeSettingsRepository()),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -25,10 +27,10 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: Consumer(
-          builder: (context, ref, _) =>
-              MaterialApp.router(
-                  theme: AppTheme.light(useGoogleFonts: false),
-                  routerConfig: ref.watch(routerProvider)),
+          builder: (context, ref, _) => MaterialApp.router(
+            theme: AppTheme.light(useGoogleFonts: false),
+            routerConfig: ref.watch(routerProvider),
+          ),
         ),
       ),
     );

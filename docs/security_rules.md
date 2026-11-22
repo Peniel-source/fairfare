@@ -6,6 +6,7 @@ The rules follow the ownership table in [erd.md](erd.md). Access not explicitly 
 |---|---|---|
 | `passengers` | Own profile only | Create own basic profile; change display name only |
 | `passengers/{uid}/savedRoutes` | Owner only | Owner CRUD; creation timestamp is immutable |
+| `zones` | Public | None; backend seed only |
 | `corridors` | Public | None |
 | `corridorStats` | Public | None |
 | `notarizations` | Public | None |
@@ -18,6 +19,8 @@ The rules follow the ownership table in [erd.md](erd.md). Access not explicitly 
 | `poolLedger` | None | None |
 
 Signup accepts only `displayName`, authenticated `email`, and a server timestamp for `createdAt`. Trust, streaks, badges, counts, and activity dates are backend-owned. Display names, area names, and route labels must be nonblank, trimmed strings of at most 80 characters. Saved route areas must differ, including case-insensitive comparisons.
+
+Zones are stored at `zones/{lowercaseName}` with `name`, `latitude`, and `longitude`. Signed-out and signed-in clients may read individual zones or list the collection. All client creates, updates, and deletes are denied; the backend Admin SDK seeds the collection.
 
 Reports require an existing corridor, an integer price of 1–50,000 RWF, a supported time/weather value, the authenticated passenger ID, and a server creation timestamp. `reason`, `verifiedAt`, and `processedAt` may start absent or null; clients cannot subsequently change them. Clients cannot create seed reports or change status/ownership. The backend may create verified seeds with `isSeeded: true` and no `passengerId`; those reports are not client-readable.
 
@@ -42,8 +45,8 @@ The runner starts only Firestore using the existing `firebase.json` and project 
 
 Tests cover public/private access, owner CRUD, field allowlists, backend-only metadata/balances/status, input boundaries, seed protection, private list queries, reference reuse, and rejected batches. Emulator rules tests do not prove production indexes are deployed or that backend approvals are correct. Collection owners review the rules before deployment through the team's Firebase workflow.
 
-Local validation: 110 emulator tests passed with Node 22.19.0, Firebase CLI 15.34.1, and Firestore emulator 1.22.0.
+Local validation: 112 emulator tests passed with Node 22.19.0, Firebase CLI 15.34.1, and Firestore emulator 1.22.0, including signed-out and signed-in zone reads and blocked client writes.
 
-The app currently uses fake repositories, which do not exercise Firestore rules. Real repositories must write the documented field shapes and server timestamps.
+Fake repositories do not exercise Firestore rules. Real repositories must write the documented field shapes and server timestamps.
 
 References: [Firebase rules testing](https://firebase.google.com/docs/rules/unit-tests), [field-level write restrictions](https://firebase.google.com/docs/firestore/security/rules-fields).
