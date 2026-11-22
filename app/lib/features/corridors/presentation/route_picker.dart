@@ -95,14 +95,19 @@ class ZoneSearchField extends StatelessWidget {
         final text = typed.text.trim().toLowerCase();
         //show nothing until the student types
         if (text.isEmpty) return const Iterable<Zone>.empty();
-        return zones.where((option) => option.name.toLowerCase().contains(text));
+        return zones.where(
+          (option) => option.name.toLowerCase().contains(text),
+        );
       },
       onSelected: onPick,
       fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
         return TextField(
           controller: controller,
           focusNode: focusNode,
-          decoration: InputDecoration(labelText: label, hintText: 'Type an area'),
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: 'Type an area',
+          ),
         );
       },
     );

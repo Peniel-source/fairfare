@@ -37,50 +37,50 @@ class CorridorCard extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //corridor name
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //corridor name
+            Text(
+              '${corridor.fromArea} to ${corridor.toArea}',
+              style: text.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            if (stats == null)
               Text(
-                '${corridor.fromArea} to ${corridor.toArea}',
-                style: text.titleMedium,
+                'No reports yet. Be the first to share a price.',
+                style: text.bodyMedium?.copyWith(color: palette.mutedText),
+              )
+            else ...[
+              //the typical price
+              Text(
+                Formatters.price(stats!.median),
+                style: text.titleLarge?.copyWith(color: palette.priceText),
               ),
-              const SizedBox(height: AppSpacing.md),
-              if (stats == null)
-                Text(
-                  'No reports yet. Be the first to share a price.',
-                  style: text.bodyMedium?.copyWith(color: palette.mutedText),
-                )
-              else ...[
-                //the typical price
-                Text(
-                  Formatters.price(stats!.median),
-                  style: text.titleLarge?.copyWith(color: palette.priceText),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                GradientRangeBar(
-                  low: stats!.low,
-                  median: stats!.median,
-                  high: stats!.high,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                //price range in words
-                Text(
-                  'Usually ${Formatters.priceRange(stats!.low, stats!.high)}',
-                  style: text.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '${stats!.sampleSize} reports · ${confidenceText(stats!.confidence)} · '
-                      'updated ${Formatters.relativeTime(stats!.updatedAt)}',
-                  style: text.bodySmall?.copyWith(color: palette.mutedText),
-                ),
-              ],
+              const SizedBox(height: AppSpacing.sm),
+              GradientRangeBar(
+                low: stats!.low,
+                median: stats!.median,
+                high: stats!.high,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              //price range in words
+              Text(
+                'Usually ${Formatters.priceRange(stats!.low, stats!.high)}',
+                style: text.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${stats!.sampleSize} reports · ${confidenceText(stats!.confidence)} · '
+                'updated ${Formatters.relativeTime(stats!.updatedAt)}',
+                style: text.bodySmall?.copyWith(color: palette.mutedText),
+              ),
             ],
-          ),
+          ],
         ),
+      ),
     );
   }
 }
