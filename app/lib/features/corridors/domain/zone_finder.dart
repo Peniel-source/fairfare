@@ -1,6 +1,5 @@
 import 'dart:math';
 
-
 //zone class
 class Zone {
   final String id;
@@ -16,7 +15,6 @@ class Zone {
   });
 }
 
-
 //max distance away from zone
 const maxZoneDistanceKm = 3.0;
 
@@ -29,7 +27,10 @@ double distanceKm(double lat1, double lng1, double lat2, double lng2) {
 
   final a =
       sin(dLat / 2) * sin(dLat / 2) +
-          cos(toRadians(lat1)) * cos(toRadians(lat2)) * sin(dLng / 2) * sin(dLng / 2);
+      cos(toRadians(lat1)) *
+          cos(toRadians(lat2)) *
+          sin(dLng / 2) *
+          sin(dLng / 2);
 
   return 2 * earthRadiusKm * asin(sqrt(a));
 }

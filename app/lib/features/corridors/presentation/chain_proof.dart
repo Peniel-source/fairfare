@@ -33,9 +33,7 @@ class ChainProof extends ConsumerWidget {
             Flexible(
               child: Text(
                 'Prices checked on chain, ${receipt.date}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
+                style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: color),
               ),
             ),

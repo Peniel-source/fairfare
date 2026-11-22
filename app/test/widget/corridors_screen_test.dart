@@ -43,9 +43,9 @@ class TestCorridorRepository implements CorridorRepository {
 void main() {
   //puts the screen on a tall phone so every card is built
   Future<void> pumpScreen(
-      WidgetTester tester,
-      CorridorRepository repository,
-      ) async {
+    WidgetTester tester,
+    CorridorRepository repository,
+  ) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -81,8 +81,8 @@ void main() {
   });
 
   testWidgets('shows the empty message when there are no routes', (
-      tester,
-      ) async {
+    tester,
+  ) async {
     await pumpScreen(tester, TestCorridorRepository());
     await tester.pumpAndSettle();
 
@@ -103,8 +103,8 @@ void main() {
   });
 
   testWidgets('typing an area that does not exist shows the empty message', (
-      tester,
-      ) async {
+    tester,
+  ) async {
     await pumpScreen(tester, FakeCorridorRepository());
     await tester.pumpAndSettle();
 
