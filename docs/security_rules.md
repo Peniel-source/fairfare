@@ -4,13 +4,13 @@ The rules follow the ownership table in [erd.md](erd.md). Access not explicitly 
 
 | Collection | Client reads | Client writes |
 |---|---|---|
-| `passengers` | Own profile only | Create own basic profile; change display name only |
+| `passengers` | Own profile only | Create own basic profile; change display name and avatar only |
 | `passengers/{uid}/savedRoutes` | Owner only | Owner CRUD; creation timestamp is immutable |
 | `zones` | Public | None; backend seed only |
 | `corridors` | Public | None |
 | `corridorStats` | Public | None |
 | `notarizations` | Public | None |
-| `leaderboard` | Public | None; backend copies public name/score |
+| `leaderboard` | Public | None; backend copies public name/avatar/score |
 | `reports` | Owner only | Create pending; edit price or delete while pending |
 | `wallets` | Owner only | None |
 | `walletEntries` | Owner only | None |
@@ -18,7 +18,7 @@ The rules follow the ownership table in [erd.md](erd.md). Access not explicitly 
 | `subscriptions` | Owner only | Create own pending reference |
 | `poolLedger` | None | None |
 
-Signup accepts only `displayName`, authenticated `email`, and a server timestamp for `createdAt`. Trust, streaks, badges, counts, and activity dates are backend-owned. Display names, area names, and route labels must be nonblank, trimmed strings of at most 80 characters. Saved route areas must differ, including case-insensitive comparisons.
+Signup accepts only `displayName`, authenticated `email`, and a server timestamp for `createdAt`; `avatar` cannot be set at signup. Afterwards the owner may set `avatar`, but only to a preset ID matching `[wm]0[1-8]` (`w01`–`w08`, `m01`–`m08`); any other value, such as a URL, is denied. Trust, streaks, badges, counts, and activity dates are backend-owned. Display names, area names, and route labels must be nonblank, trimmed strings of at most 80 characters. Saved route areas must differ, including case-insensitive comparisons.
 
 Zones are stored at `zones/{lowercaseName}` with `name`, `latitude`, and `longitude`. Signed-out and signed-in clients may read individual zones or list the collection. All client creates, updates, and deletes are denied; the backend Admin SDK seeds the collection.
 
