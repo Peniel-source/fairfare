@@ -8,6 +8,7 @@ import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import 'auth_providers.dart';
+import 'google_sign_in_button.dart';
 
 enum EmailAuthMode { login, register, resetPassword }
 
@@ -189,6 +190,10 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             ),
           ),
         ),
+        if (!_resetting) ...[
+          const AuthMethodDivider(),
+          const GoogleSignInButton(),
+        ],
         const SizedBox(height: AppSpacing.md),
         if (!_registering && !_resetting)
           AppButton(
