@@ -20,7 +20,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/utils/formatters.dart';
 import '../../features/profile/presentation/profile_providers.dart';
 
 /// Shows the passenger's display name in the app bar.
@@ -35,23 +34,8 @@ class ProfileGreeting extends ConsumerWidget {
     return passengerAsync.when(
       loading: () => const Text('FairFare'),
       error: (_, _) => const Text('FairFare'),
-      data: (passenger) {
-        final initials = Formatters.initials(passenger.displayName);
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 16,
-              child: Text(
-                initials,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text('Hi, ${passenger.displayName}'),
-          ],
-        );
-      },
+      // The avatar sits on the right of the app bar (HomeAppBar).
+      data: (passenger) => Text('Hi, ${passenger.displayName}'),
     );
   }
 }

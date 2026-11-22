@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/user_avatar.dart';
 import '../domain/entities/leaderboard_entry.dart';
 import 'profile_providers.dart';
 
@@ -83,9 +84,12 @@ class _LeaderboardRow extends StatelessWidget {
       selected: isMe,
       selectedTileColor: scheme.secondaryContainer,
       selectedColor: scheme.onSecondaryContainer,
-      leading: SizedBox(
-        width: 32,
-        child: Text('#$rank', style: text.titleSmall),
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(width: 32, child: Text('#$rank', style: text.titleSmall)),
+          UserAvatar(avatar: entry.avatar, name: entry.displayName, radius: 16),
+        ],
       ),
       title: Text(isMe ? '${entry.displayName} (you)' : entry.displayName),
       trailing: Text('${entry.trustScore}', style: text.titleMedium),

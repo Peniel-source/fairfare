@@ -206,6 +206,19 @@ test('profile names can change without changing protected fields', async () => {
   await assertFails(deleteDoc(doc(client(), 'passengers/alice')));
 });
 
+test('passengers can pick an avatar preset, and only a preset id', async () => {
+  const ref = doc(client(), 'passengers/alice');
+  await assertSucceeds(updateDoc(ref, { avatar: 'w03' }));
+  await assertSucceeds(updateDoc(ref, { avatar: 'm08' }));
+  for (const avatar of ['w09', 'x01', 'https://example.com/me.png', '', 3, null]) {
+    await assertFails(updateDoc(ref, { avatar }));
+  }
+  await assertFails(updateDoc(doc(client('bob'), 'passengers/alice'), { avatar: 'w01' }));
+  await assertFails(setDoc(doc(client('new'), 'passengers/new'), {
+    displayName: 'New Passenger', email: 'new@example.com', createdAt: serverTimestamp(), avatar: 'w01',
+  }));
+});
+
 test('signup rejects false email, blank name, missing fields, and forged timestamp', async () => {
   const ref = doc(client('new'), 'passengers/new');
   const valid = { displayName: 'New', email: 'new@example.com', createdAt: serverTimestamp() };

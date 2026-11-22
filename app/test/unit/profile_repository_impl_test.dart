@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fairfare/core/errors/failures.dart';
 import 'package:fairfare/features/profile/data/profile_repository_impl.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:mock_exceptions/mock_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -70,6 +71,64 @@ void main() {
     expect(doc.data()!['displayName'], 'Aline U.');
     expect(doc.data()!['email'], 'aline@example.com');
   });
+
+  test(
+    'no avatar until the passenger picks one; unknown ids are ignored',
+    () async {
+      await registerPassenger('p1');
+      final repo = ProfileRepositoryImpl(firestore, uid: 'p1');
+      expect((await repo.watchMe().first).avatar, isNull);
+
+      await firestore.collection('passengers').doc('p1').update({
+        'avatar': 'zz',
+      });
+      expect((await repo.watchMe().first).avatar, isNull);
+    },
+  );
+
+  test('updateAvatar saves a preset id and nothing else', () async {
+    await registerPassenger('p1');
+    final repo = ProfileRepositoryImpl(firestore, uid: 'p1');
+    await repo.updateAvatar('w03');
+    final doc = await firestore.collection('passengers').doc('p1').get();
+    expect(doc.data()!['avatar'], 'w03');
+    expect(doc.data()!['displayName'], 'Aline');
+    expect((await repo.watchMe().first).avatar, 'w03');
+
+    await expectLater(
+      repo.updateAvatar('w99'),
+      throwsA(isA<FirestoreFailure>()),
+    );
+    await expectLater(
+      ProfileRepositoryImpl(firestore, uid: null).updateAvatar('w01'),
+      throwsA(isA<AuthFailure>()),
+    );
+  });
+
+  test(
+    'a refused avatar save says so, not that the profile is off limits',
+    () async {
+      await registerPassenger('p1');
+      whenCalling(Invocation.method(#update, null))
+          .on(firestore.collection('passengers').doc('p1'))
+          .thenThrow(
+            FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+            ),
+          );
+      await expectLater(
+        ProfileRepositoryImpl(firestore, uid: 'p1').updateAvatar('w03'),
+        throwsA(
+          isA<FirestoreFailure>().having(
+            (f) => f.message,
+            'message',
+            'Could not save your avatar. Please try again later',
+          ),
+        ),
+      );
+    },
+  );
 
   test('signed out: profile errors with an AuthFailure', () async {
     final repo = ProfileRepositoryImpl(firestore, uid: null);

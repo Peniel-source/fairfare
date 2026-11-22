@@ -76,6 +76,26 @@ class FakeProfileRepository implements ProfileRepository {
                 id: e.id,
                 displayName: name,
                 trustScore: e.trustScore,
+                avatar: e.avatar,
+              )
+            : e,
+    ];
+    _leaderboardController.add(_sorted());
+  }
+
+  @override
+  Future<void> updateAvatar(String avatarId) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    _passenger = _passenger.copyWith(avatar: avatarId);
+    _meController.add(_passenger);
+    _leaderboard = [
+      for (final e in _leaderboard)
+        e.id == _passenger.id
+            ? LeaderboardEntry(
+                id: e.id,
+                displayName: e.displayName,
+                trustScore: e.trustScore,
+                avatar: avatarId,
               )
             : e,
     ];

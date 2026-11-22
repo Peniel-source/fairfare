@@ -16,6 +16,7 @@ erDiagram
     PASSENGER {
         string documentId PK
         string displayName
+        string avatar
         string email
         string phone
         int trustScore
@@ -104,6 +105,7 @@ erDiagram
     LEADERBOARD_ENTRY {
         string documentId PK,FK
         string displayName
+        string avatar
         int trustScore
     }
     POOL_LEDGER {
@@ -129,7 +131,7 @@ erDiagram
 
 | Entity | Firestore path | Passenger writes | Backend writes | App reads |
 |---|---|---|---|---|
-| Passenger | `passengers/{uid}` | Creates `displayName`, `email`, `createdAt`; updates `displayName` | `trustScore`, `streak`, `badges`, `verifiedCount`, `lastReportDate`; optional `phone` and email synchronization | Owner |
+| Passenger | `passengers/{uid}` | Creates `displayName`, `email`, `createdAt`; updates `displayName` and `avatar` (one of the 16 preset IDs `w01`–`w08`, `m01`–`m08`; absent until chosen) | `trustScore`, `streak`, `badges`, `verifiedCount`, `lastReportDate`; optional `phone` and email synchronization | Owner |
 | Saved route | `passengers/{uid}/savedRoutes/{routeId}` | Creates `fromArea`, `toArea`, `label`, `createdAt`; edits areas/label; deletes own route | None required | Owner |
 | Zone | `zones/{zoneId}` | None | `name`, `latitude`, `longitude` | Public |
 | Corridor | `corridors/{corridorId}` | None | `fromArea`, `toArea`, `isSeeded`, `createdAt` | Public |
@@ -139,7 +141,7 @@ erDiagram
 | Wallet entry | `walletEntries/{reportId}` | None | `passengerId`, `reportId`, `amount`, `state`, `createdAt` | Owner |
 | Cash-out request | `cashOutRequests/{requestId}` | Creates `passengerId`, `amount`, `method`, `createdAt`, `status: pending` | `status` changes | Owner |
 | Subscription | `subscriptions/{reference}` | Creates `passengerId`, `reference`, `amount`, `status: pending` | `status` changes, `startsAt`, `endsAt` | Owner |
-| Leaderboard entry | `leaderboard/{uid}` | None | `displayName`, `trustScore`; E5 keeps the copied name synchronized when a passenger edits it | Public |
+| Leaderboard entry | `leaderboard/{uid}` | None | `displayName`, `avatar`, `trustScore`; E5 keeps the copied name and avatar synchronized when a passenger edits them | Public |
 | Pool ledger | `poolLedger/main` | None | `rewardBalance`, `operationsBalance`, `reserveBalance`, `updatedAt` | None |
 | Notarization | `notarizations/{notarizationId}` | None | `hash`, `txId`, `periodStart`, `periodEnd`, `createdAt` | Public |
 
@@ -161,4 +163,4 @@ The `Report` domain entity allows an absent passenger ID for seed reports. Fires
 
 ## LeaderboardEntry
 
-[`LeaderboardEntry`](../app/lib/features/profile/domain/entities/leaderboard_entry.dart) contains `id` (passenger UID), `displayName`, and `trustScore`. The backend writes the public name/score projection; private passenger fields remain in `passengers/{uid}`.
+[`LeaderboardEntry`](../app/lib/features/profile/domain/entities/leaderboard_entry.dart) contains `id` (passenger UID), `displayName`, `trustScore`, and an optional `avatar` preset ID. The backend writes the public name/avatar/score projection and copies `avatar` only when it is a valid preset ID; private passenger fields remain in `passengers/{uid}`.

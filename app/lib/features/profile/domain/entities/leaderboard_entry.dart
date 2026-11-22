@@ -9,9 +9,13 @@ class LeaderboardEntry {
   final String displayName;
   final int trustScore;
 
+  /// Avatar id the passenger picked, or null.
+  final String? avatar;
+
   const LeaderboardEntry({
     required this.id,
     required this.displayName,
     required this.trustScore,
+    this.avatar,
   });
 }

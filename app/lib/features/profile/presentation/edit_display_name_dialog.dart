@@ -44,7 +44,11 @@ class _EditDisplayNameDialogState
     final ok = await ref
         .read(editDisplayNameControllerProvider.notifier)
         .save(_controller.text);
-    if (ok && mounted) Navigator.of(context).pop(true);
+    // Close only if the dialog is still open: if the passenger already
+    // closed it, popping again would close the screen underneath.
+    if (ok && mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   @override
