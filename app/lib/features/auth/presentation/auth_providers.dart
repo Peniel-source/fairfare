@@ -62,6 +62,10 @@ class AuthController extends AsyncNotifier<void> {
             .call(email.trim(), password, displayName.trim()),
       );
 
+  /// Google sign in (D2). Returns true when the passenger is signed in.
+  Future<bool> signInWithGoogle() =>
+      _run(() => ref.read(signInWithGoogleProvider).call());
+
   Future<bool> resetPassword(String email) =>
       _run(() => ref.read(sendPasswordResetProvider).call(email.trim()));
 

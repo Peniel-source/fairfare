@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/errors/failures.dart';
@@ -9,11 +11,20 @@ import '../domain/entities/auth_user.dart';
 import '../domain/repositories/auth_repository.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository(this._auth, this._firestore);
+  /// [googleSignIn] is only passed by tests. The app creates the Google client
+  /// the first time it is needed.
+  FirebaseAuthRepository(
+    this._auth,
+    this._firestore, {
+    GoogleSignIn? googleSignIn,
+  }) : _googleClient = googleSignIn;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  GoogleSignIn? _googleClient;
   Completer<void>? _registration;
+
+  GoogleSignIn get _google => _googleClient ??= GoogleSignIn();
 
   @override
   Stream<AuthUser?> authStateChanges() =>
@@ -127,12 +138,132 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   });
 
+  /// Signs out of Firebase, and of Google too when the passenger used it, so
+  /// the next Google sign in shows the account picker again (D2).
   @override
-  Future<void> signOut() => _run(_auth.signOut);
+  Future<void> signOut() => _run(() async {
+    await _signOutOfGoogleIfUsed();
+    await _auth.signOut();
+  });
 
+  /// Google sign in (D2).
+  ///
+  /// The first Google sign in creates passengers/{uid} with only the fields
+  /// the rules allow. Like email registration, it holds [authStateChanges]
+  /// until that profile exists, so the router never opens a screen that reads
+  /// a profile which is not there yet.
   @override
   Future<void> signInWithGoogle() async {
-    throw const AuthFailure('Google sign-in is not available yet');
+    if (_registration != null) {
+      throw const AuthFailure('Sign in is already in progress');
+    }
+    final registration = Completer<void>();
+    _registration = registration;
+    GoogleSignInAccount? account;
+    User? user;
+    try {
+      // signIn() returns null when the passenger closes the account picker.
+      account = await _google.signIn();
+      if (account == null) {
+        throw const AuthFailure('Google sign-in was cancelled');
+      }
+      final tokens = await account.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: tokens.idToken,
+        accessToken: tokens.accessToken,
+      );
+      user = (await _auth.signInWithCredential(credential)).user;
+      if (user == null) {
+        throw const AuthFailure('Could not sign in with Google');
+      }
+      await _ensurePassengerProfile(user);
+    } catch (error, stack) {
+      // Leave nothing half signed in: a picked Google account would otherwise
+      // be reused silently on the next try.
+      if (account != null) await _signOutOfGoogleQuietly();
+      if (user != null) await _signOutOfFirebaseQuietly();
+      Error.throwWithStackTrace(_googleFailure(error), stack);
+    } finally {
+      registration.complete();
+      _registration = null;
+    }
+  }
+
+  /// Creates passengers/{uid} on the first Google sign in. An existing
+  /// profile (an earlier Google sign in, or an email account with the same
+  /// address) is left untouched.
+  Future<void> _ensurePassengerProfile(User user) async {
+    final profile = _firestore
+        .collection(FirestorePaths.passengers)
+        .doc(user.uid);
+    if ((await profile.get()).exists) return;
+    final email = user.email;
+    if (email == null || email.isEmpty) {
+      throw const AuthFailure(
+        'Your Google account has no email address. Use email sign-in instead',
+      );
+    }
+    await profile.set({
+      'displayName': passengerNameFor(user.displayName, email),
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> _signOutOfGoogleIfUsed() async {
+    try {
+      final providers = _auth.currentUser?.providerData ?? const [];
+      if (providers.any(
+        (info) => info.providerId == GoogleAuthProvider.PROVIDER_ID,
+      )) {
+        await _google.signOut();
+      }
+    } catch (_) {
+      // Signing out of Google only resets the account picker. It must never
+      // stop the Firebase sign out.
+    }
+  }
+
+  Future<void> _signOutOfGoogleQuietly() async {
+    try {
+      await _google.signOut();
+    } catch (_) {
+      // Best effort: the original error is the one the passenger needs.
+    }
+  }
+
+  Future<void> _signOutOfFirebaseQuietly() async {
+    try {
+      await _auth.signOut();
+    } catch (_) {
+      // Best effort: the original error is the one the passenger needs.
+    }
+  }
+
+  Object _googleFailure(Object error) {
+    if (error is PlatformException) {
+      return switch (error.code) {
+        GoogleSignIn.kNetworkError => const NetworkFailure(),
+        GoogleSignIn.kSignInCanceledError => const AuthFailure(
+          'Google sign-in was cancelled',
+        ),
+        _ => const AuthFailure('Google sign-in failed. Please try again'),
+      };
+    }
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'account-exists-with-different-credential':
+          return const AuthFailure(
+            'This email already uses another sign-in method. Sign in with '
+            'your email and password',
+          );
+        case 'operation-not-allowed':
+          return const AuthFailure('Google sign-in is currently unavailable');
+        case 'invalid-credential':
+          return const AuthFailure('Google sign-in failed. Please try again');
+      }
+    }
+    return _failure(error);
   }
 
   Future<void> _run(Future<void> Function() action) async {
@@ -168,4 +299,23 @@ class FirebaseAuthRepository implements AuthRepository {
       ),
     };
   }
+}
+
+/// The display name saved on a passenger's first Google sign in.
+///
+/// Uses the Google name, else the part of the email before the @, else
+/// "Passenger". Spaces are tidied and the result is at most 80 characters,
+/// so it always passes the rules' displayName check.
+String passengerNameFor(String? googleName, String email) {
+  final name = _tidyName(googleName ?? '');
+  if (name.isNotEmpty) return name;
+  final local = _tidyName(email.split('@').first);
+  return local.isEmpty ? 'Passenger' : local;
+}
+
+String _tidyName(String value) {
+  final tidy = value.trim().replaceAll(RegExp(r'\s+'), ' ');
+  final runes = tidy.runes;
+  if (runes.length <= 80) return tidy;
+  return String.fromCharCodes(runes.take(80)).trimRight();
 }

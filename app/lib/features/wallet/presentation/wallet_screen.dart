@@ -1,9 +1,8 @@
 // Wallet tab (D4): pending and finalized points, reward history, cash out.
 //
-// Everything is a live stream from WalletRepository, so balances change on
-// screen as soon as the server moves a reward from pending to finalized.
-// Runs on FakeWalletRepository until B2 (rules) lands and the Firestore
-// repository is wired.
+// Everything is a live stream from WalletRepository (Firestore), so balances
+// change on screen as soon as the server moves a reward from pending to
+// finalized.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

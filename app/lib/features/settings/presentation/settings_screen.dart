@@ -257,9 +257,23 @@ class _AccountCard extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    // The router listens to the auth state and sends the passenger to Landing.
-    // TODO(D2): also clear per-user provider state so the next user starts
-    // clean, once Google sign in (D2) is wired.
-    await ref.read(signOutProvider).call();
+    // Signs out of Firebase, and of Google when it was used (D2). The router
+    // listens to the auth state and sends the passenger to Landing. Providers
+    // holding a passenger's data (wallet, pass, profile, saved routes) watch
+    // the signed-in uid, so they rebuild empty and the next user starts clean.
+    final controller = ref.read(authControllerProvider.notifier);
+    final signedOut = await controller.signOut();
+    if (signedOut || !context.mounted) return;
+    final error = ref.read(authControllerProvider).error;
+    controller.clearError();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error == null
+              ? 'Could not log out. Please try again'
+              : authErrorMessage(error),
+        ),
+      ),
+    );
   }
 }
