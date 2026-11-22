@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/errors/failures.dart';
+import '../domain/entities/avatar_preset.dart';
 import '../domain/entities/leaderboard_entry.dart';
 import '../domain/entities/passenger.dart';
 import '../domain/repositories/profile_repository.dart';
@@ -57,6 +58,34 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<void> updateAvatar(String avatarId) async {
+    final uid = this.uid;
+    if (uid == null) throw const AuthFailure('Sign in to choose an avatar');
+    if (avatarPresetById(avatarId) == null) {
+      throw const FirestoreFailure('That avatar is not available');
+    }
+    try {
+      // The rules allow displayName and avatar (a preset id) only.
+      await _me(uid).update({'avatar': avatarId});
+    } on FirebaseException catch (error, stack) {
+      // The passenger is editing their own profile, so a refusal means the
+      // rules do not accept the avatar (for example rules that predate the
+      // avatar field), not that they lack access to the profile.
+      if (error.code == 'permission-denied') {
+        Error.throwWithStackTrace(
+          const FirestoreFailure(
+            'Could not save your avatar. Please try again later',
+          ),
+          stack,
+        );
+      }
+      Error.throwWithStackTrace(_failure(error), stack);
+    } catch (error, stack) {
+      Error.throwWithStackTrace(_failure(error), stack);
+    }
+  }
+
+  @override
   Stream<List<LeaderboardEntry>> watchLeaderboard() {
     return _firestore
         .collection(FirestorePaths.leaderboard)
@@ -70,6 +99,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 id: doc.id,
                 displayName: _string(doc.data()['displayName']),
                 trustScore: _int(doc.data()['trustScore']),
+                avatar: _avatar(doc.data()['avatar']),
               ),
           ],
         )
@@ -104,11 +134,16 @@ Passenger passengerFromFirestore(String id, Map<String, dynamic> data) {
     trustScore: _int(data['trustScore']),
     streak: _int(data['streak']),
     badges: badges is List ? badges.whereType<String>().toList() : const [],
+    avatar: _avatar(data['avatar']),
     verifiedCount: _int(data['verifiedCount']),
     lastReportDate: lastReport is Timestamp ? lastReport.toDate() : null,
   );
 }
 
 String _string(Object? value) => value is String ? value : '';
+
+/// A known avatar id, else null (initials are shown instead).
+String? _avatar(Object? value) =>
+    value is String && avatarPresetById(value) != null ? value : null;
 
 int _int(Object? value) => value is num ? value.toInt() : 0;

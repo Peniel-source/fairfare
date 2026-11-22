@@ -59,6 +59,26 @@ class EditDisplayNameController extends AutoDisposeAsyncNotifier<void> {
   }
 }
 
+/// State of the "save avatar" action in the avatar picker.
+class ChooseAvatarController extends AutoDisposeAsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  /// Returns true when the avatar was saved.
+  Future<bool> save(String avatarId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(profileRepositoryProvider).updateAvatar(avatarId),
+    );
+    return !state.hasError;
+  }
+}
+
+final chooseAvatarControllerProvider =
+    AsyncNotifierProvider.autoDispose<ChooseAvatarController, void>(
+      ChooseAvatarController.new,
+    );
+
 final editDisplayNameControllerProvider =
     AsyncNotifierProvider.autoDispose<EditDisplayNameController, void>(
       EditDisplayNameController.new,

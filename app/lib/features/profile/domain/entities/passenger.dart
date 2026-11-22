@@ -1,7 +1,7 @@
 /// Passenger profile with trust score, streak, and badges.
 ///
 /// trustScore, streak, badges, verifiedCount and lastReportDate are written
-/// only by the server (E5). The app may change displayName only.
+/// only by the server (E5). The app may change displayName and avatar only.
 class Passenger {
   final String id;
   final String displayName;
@@ -9,6 +9,10 @@ class Passenger {
   final int trustScore;
   final int streak;
   final List<String> badges;
+
+  /// Id of the avatar the passenger picked (see avatar_preset.dart), or null
+  /// if they have not picked one yet.
+  final String? avatar;
 
   /// Number of verified reports; drives the Ten Verified badge.
   final int verifiedCount;
@@ -24,6 +28,7 @@ class Passenger {
     this.trustScore = 0,
     this.streak = 0,
     List<String>? badges,
+    this.avatar,
     this.verifiedCount = 0,
     this.lastReportDate,
   }) : badges = badges ?? const [];
@@ -33,6 +38,7 @@ class Passenger {
     int? trustScore,
     int? streak,
     List<String>? badges,
+    String? avatar,
     int? verifiedCount,
     DateTime? lastReportDate,
   }) {
@@ -43,6 +49,7 @@ class Passenger {
       trustScore: trustScore ?? this.trustScore,
       streak: streak ?? this.streak,
       badges: badges ?? this.badges,
+      avatar: avatar ?? this.avatar,
       verifiedCount: verifiedCount ?? this.verifiedCount,
       lastReportDate: lastReportDate ?? this.lastReportDate,
     );
