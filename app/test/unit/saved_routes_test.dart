@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fairfare/core/errors/failures.dart';
 import 'package:fairfare/features/auth/domain/entities/auth_user.dart';
 import 'package:fairfare/features/auth/presentation/auth_providers.dart';
-import 'package:fairfare/features/corridors/data/fake_corridor_repository.dart';
+
+import '../fakes/fake_corridor_repository.dart';
+
 import 'package:fairfare/features/corridors/domain/usecases/search_corridors.dart';
 import 'package:fairfare/features/saved_routes/data/firestore_saved_route_repository.dart';
 import 'package:fairfare/features/saved_routes/domain/entities/saved_route.dart';

@@ -36,3 +36,5 @@ Check your setup with `flutter doctor`.
 3. Toky  — role
 4. Benjamin — role
 5. Peniel — role
+
+Avatars: Personas by Draftbit, via DiceBear, licensed CC BY 4.0.

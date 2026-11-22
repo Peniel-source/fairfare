@@ -1,3 +1,5 @@
+import '../fakes/fake_data_overrides.dart';
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,7 +13,9 @@ import 'package:fairfare/features/saved_routes/domain/repositories/saved_route_r
 import 'package:fairfare/features/saved_routes/presentation/saved_route_providers.dart';
 import 'package:fairfare/features/saved_routes/presentation/saved_route_sheet.dart';
 import 'package:fairfare/features/saved_routes/presentation/saved_routes_screen.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+
+import '../fakes/fake_settings_repository.dart';
+
 import 'package:fairfare/features/settings/presentation/settings_providers.dart';
 import 'package:fairfare/router.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -71,6 +75,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...fakeDataOverrides(),
           savedRouteRepositoryProvider.overrideWithValue(repository),
           if (updates != null)
             savedRoutesProvider.overrideWith((ref) => updates),
@@ -253,6 +258,7 @@ void main() {
       await seedRoute();
       final container = ProviderContainer(
         overrides: [
+          ...fakeDataOverrides(),
           authStateProvider.overrideWith(
             (ref) => Stream.value(
               const AuthUser(

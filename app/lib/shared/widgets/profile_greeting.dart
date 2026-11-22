@@ -10,11 +10,10 @@
 //                  Firebase imports.
 //   2. Interface   features/<f>/domain/repositories/   abstract class; the
 //                  signed-in passenger id is resolved inside the repository.
-//   3. Fake        features/<f>/data/fake_<f>_repository.dart   in-memory
-//                  sample data, used until the Firestore implementation exists.
-//   4. Provider    features/<f>/presentation/<f>_providers.dart   returns the
-//                  fake or the real repository based on AppConstants.useFakeData.
-//   5. Widget      a ConsumerWidget that ref.watch()es the provider and handles
+//   3. Provider    features/<f>/presentation/<f>_providers.dart   returns the
+//                  real repository. Tests override it with a fake from
+//                  test/fakes.
+//   4. Widget      a ConsumerWidget that ref.watch()es the provider and handles
 //                  loading, error and data. No business logic and no Firestore
 //                  calls in the widget.
 import 'package:flutter/material.dart';

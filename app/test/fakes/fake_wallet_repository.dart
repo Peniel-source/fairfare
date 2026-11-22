@@ -1,11 +1,11 @@
 // Fake wallet repository with sample data.
 import 'dart:async';
 
-import '../domain/entities/cash_out_request.dart';
-import '../domain/entities/wallet.dart';
-import '../domain/entities/wallet_entry.dart';
-import '../domain/repositories/wallet_repository.dart';
-import '../../report/domain/entities/report_enums.dart';
+import 'package:fairfare/features/wallet/domain/entities/cash_out_request.dart';
+import 'package:fairfare/features/wallet/domain/entities/wallet.dart';
+import 'package:fairfare/features/wallet/domain/entities/wallet_entry.dart';
+import 'package:fairfare/features/wallet/domain/repositories/wallet_repository.dart';
+import 'package:fairfare/features/report/domain/entities/report_enums.dart';
 
 class FakeWalletRepository implements WalletRepository {
   final _walletController = StreamController<Wallet>.broadcast();

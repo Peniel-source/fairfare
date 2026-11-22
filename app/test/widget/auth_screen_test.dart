@@ -1,10 +1,16 @@
+import '../fakes/fake_data_overrides.dart';
+
 import 'dart:async';
 
 import 'package:fairfare/core/errors/failures.dart';
 import 'package:fairfare/core/theme/app_theme.dart';
-import 'package:fairfare/features/auth/data/fake_auth_repository.dart';
+
+import '../fakes/fake_auth_repository.dart';
+
 import 'package:fairfare/features/auth/presentation/auth_providers.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+
+import '../fakes/fake_settings_repository.dart';
+
 import 'package:fairfare/features/settings/presentation/settings_providers.dart';
 import 'package:fairfare/router.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +78,7 @@ void main() {
   }) async {
     final container = ProviderContainer(
       overrides: [
+        ...fakeDataOverrides(),
         authRepositoryProvider.overrideWithValue(repository),
         settingsRepositoryProvider.overrideWithValue(FakeSettingsRepository()),
       ],
