@@ -1,10 +1,10 @@
 // Fake report repository with sample data.
 import 'dart:async';
 
-import '../domain/entities/new_report.dart';
-import '../domain/entities/report.dart';
-import '../domain/entities/report_enums.dart';
-import '../domain/repositories/report_repository.dart';
+import 'package:fairfare/features/report/domain/entities/new_report.dart';
+import 'package:fairfare/features/report/domain/entities/report.dart';
+import 'package:fairfare/features/report/domain/entities/report_enums.dart';
+import 'package:fairfare/features/report/domain/repositories/report_repository.dart';
 
 class FakeReportRepository implements ReportRepository {
   final _controller = StreamController<List<Report>>.broadcast();

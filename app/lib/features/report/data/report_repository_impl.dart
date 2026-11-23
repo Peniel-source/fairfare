@@ -9,20 +9,25 @@ import '../domain/repositories/report_repository.dart';
 import 'report_model.dart';
 
 class ReportRepositoryImpl implements ReportRepository {
-  ReportRepositoryImpl({FirebaseFirestore? firestore, FirebaseAuth? auth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _auth = auth ?? FirebaseAuth.instance;
+  ReportRepositoryImpl({
+    FirebaseFirestore? firestore,
+    String? Function()? currentUid,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _currentUid =
+           currentUid ?? (() => FirebaseAuth.instance.currentUser?.uid);
 
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+
+  /// Signed in passenger id, or null
+  final String? Function() _currentUid;
 
   CollectionReference<Map<String, dynamic>> get _reports =>
       _firestore.collection(FirestorePaths.reports);
 
   String get _uid {
-    final user = _auth.currentUser;
-    if (user == null) throw const AuthFailure('Sign in to report a fare');
-    return user.uid;
+    final uid = _currentUid();
+    if (uid == null) throw const AuthFailure('Sign in to report a fare');
+    return uid;
   }
 
   @override
@@ -36,10 +41,10 @@ class ReportRepositoryImpl implements ReportRepository {
   /// Newest first, only the signed in passenger's reports
   @override
   Stream<List<Report>> watchMine() {
-    final user = _auth.currentUser;
-    if (user == null) return Stream.value(const []);
+    final uid = _currentUid();
+    if (uid == null) return Stream.value(const []);
     return _reports
-        .where('passengerId', isEqualTo: user.uid)
+        .where('passengerId', isEqualTo: uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(

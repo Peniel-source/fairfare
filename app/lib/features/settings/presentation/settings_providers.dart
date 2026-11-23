@@ -16,8 +16,7 @@ import '../domain/repositories/settings_repository.dart';
 /// Provider for the SettingsRepository implementation.
 ///
 /// Settings are local to the phone and never touch Firestore, so this always
-/// uses shared_preferences, whatever AppConstants.useFakeData says. Tests
-/// override it with FakeSettingsRepository.
+/// uses shared_preferences. Tests override it with FakeSettingsRepository.
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SharedPrefsSettingsRepository(ref.watch(sharedPreferencesProvider));
 });

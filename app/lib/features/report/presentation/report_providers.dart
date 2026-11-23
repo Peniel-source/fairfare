@@ -1,9 +1,7 @@
 // Riverpod providers for the report feature.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../auth/presentation/auth_providers.dart';
-import '../data/fake_report_repository.dart';
 import '../data/report_repository_impl.dart';
 import '../domain/entities/report.dart';
 import '../domain/repositories/report_repository.dart';
@@ -13,9 +11,6 @@ import '../domain/usecases/delete_pending_report.dart';
 
 /// Provider for the ReportRepository implementation.
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
-  if (AppConstants.useFakeData) {
-    return FakeReportRepository();
-  }
   return ReportRepositoryImpl();
 });
 

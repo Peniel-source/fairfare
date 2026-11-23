@@ -1,6 +1,9 @@
 // D6: the cash out rules (D4), shared by the form and the use case.
 import 'package:fairfare/core/errors/failures.dart';
 import 'package:fairfare/features/wallet/data/fake_wallet_repository.dart';
+
+import '../fakes/fake_wallet_repository.dart';
+
 import 'package:fairfare/features/wallet/domain/cash_out_rules.dart';
 import 'package:fairfare/features/wallet/domain/usecases/request_cash_out.dart';
 import 'package:flutter_test/flutter_test.dart';

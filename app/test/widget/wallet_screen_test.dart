@@ -3,6 +3,9 @@ import 'package:fairfare/core/errors/failures.dart';
 import 'package:fairfare/core/theme/app_theme.dart';
 import 'package:fairfare/features/profile/presentation/profile_providers.dart';
 import 'package:fairfare/features/wallet/data/fake_wallet_repository.dart';
+
+import '../fakes/fake_wallet_repository.dart';
+
 import 'package:fairfare/features/wallet/domain/entities/cash_out_request.dart';
 import 'package:fairfare/features/wallet/domain/entities/wallet.dart';
 import 'package:fairfare/features/wallet/domain/entities/wallet_entry.dart';

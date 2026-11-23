@@ -341,23 +341,22 @@ Fund the wallet from a Cardano testnet faucet first. Set `NOTARY_DAILY=true` to 
 
 ## Team
 
-<<<<<<< Updated upstream
-1. Eelaf — role
-2. Menes — role
-3. Toky  — role
-4. Benjamin — role
-5. Peniel — role
-=======
+1. Eelaf — Reports and Verification Lead
+2. Menes — Database, Security and Authentication Lead
+3. Toky  — Design, Wallet and Rewards Lead
+4. Benjamin — App Structure, Pass and Profile Lead
+5. Peniel — Backend and Blockchain Lead
 | Member | Areas |
 |---|---|
-| Peniel | NestJS server foundation, Firebase setup, corridors screen and aggregate engine, seed data, blockchain notarization |
-| Menes | ERD and Firestore design, security rules and rules tests, landing screen, email authentication, saved routes |
-| Eelaf | Report screen, My reports, verify engine, CI quality gate |
-| Toky | Theme and design system, Google sign-in, settings and preferences, wallet screen, reward engine, README |
-| Benjamin | Architecture skeleton and router, Pass screen and payments approval, profile, trust and engagement engine |
+| Peniel | Set up the repo and the NestJS server that talks to Firestore. Built the corridor price engine, the seed script and the Corridors screen with its tests. Added the area picker and "use my location" to find a route. Built the Cardano notary, which records a daily price fingerprint on chain, and prepared the Android release build |
+| Menes | Designed the ERD and the Firestore data model, with collection names and indexes. Wrote the Firestore security rules and tested them in the emulator. Built email and password sign in and the Landing screen. Built saved routes (add, edit, delete) and the zones documentation|
+| Eelaf | Built the Report screen and the My Reports list. Built the verify engine on the server: the price band check and matching reports from different riders. Added the CI format and coverage checks. Ran the quality checks, like the analyzer and the test results|
+| Toky | Built the theme and base widgets that the whole app uses. Built the Settings screen, with preferences that survive a restart. Built the Wallet screen with pending and finalized points and cash out. Built the reward engine that pays points for verified reports |
+| Benjamin | Built the app skeleton: the router, the app shell and the repository pattern. Built the Pass screen and the payment approval on the server. Built the Profile screen with the trust score, streaks, badges and leaderboard. Added the avatar picker for profiles |
 
 ## Credits
 
 - Avatars: *Personas* by Draftbit, via [DiceBear](https://www.dicebear.com), licensed CC BY 4.0.
 - Fonts: Fraunces and Inter, through Google Fonts.
->>>>>>> Stashed changes
+
+Avatars: Personas by Draftbit, via DiceBear, licensed CC BY 4.0.

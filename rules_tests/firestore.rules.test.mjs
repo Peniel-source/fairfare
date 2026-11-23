@@ -109,6 +109,7 @@ beforeEach(async () => {
     'passengers/bob': profile('bob'),
     'passengers/alice/savedRoutes/route_a': route,
     'passengers/bob/savedRoutes/route_b': route,
+    'zones/kacyiru': { name: 'Kacyiru', latitude: -1.9376, longitude: 30.0805 },
     'corridors/kacyiru_kimironko': { fromArea: 'Kacyiru', toArea: 'Kimironko', isSeeded: true, createdAt: at },
     'corridorStats/kacyiru_kimironko': { median: 1000, low: 800, high: 1200, sampleSize: 5, confidence: 'limited', windowDays: 14, updatedAt: at },
     'notarizations/stamp': { hash: 'abc', txId: 'testnet', periodStart: at, periodEnd: at, createdAt: at },
@@ -150,6 +151,24 @@ for (const path of ['corridors/kacyiru_kimironko', 'corridorStats/kacyiru_kimiro
   });
 }
 
+for (const uid of [null, 'alice']) {
+  test(`zones: ${uid ?? 'anonymous'} can read and list but cannot write`, async () => {
+    const db = client(uid);
+    const ref = doc(db, 'zones/kacyiru');
+    const zone = await assertSucceeds(getDoc(ref));
+    assert.equal(zone.id, zone.data().name.toLowerCase());
+    assert.equal(typeof zone.data().latitude, 'number');
+    assert.equal(typeof zone.data().longitude, 'number');
+    const zones = await assertSucceeds(getDocs(collection(db, 'zones')));
+    assert.equal(zones.size, 1);
+    await assertFails(setDoc(doc(db, 'zones/masaka'), {
+      name: 'Masaka', latitude: -2.0223, longitude: 30.2032,
+    }));
+    await assertFails(updateDoc(ref, { latitude: 0 }));
+    await assertFails(deleteDoc(ref));
+  });
+}
+
 for (const path of ['passengers/alice', 'passengers/alice/savedRoutes/route_a', 'reports/pending_a', 'wallets/alice', 'walletEntries/reward_a', 'cashOutRequests/cash_a', 'subscriptions/OLDREF1']) {
   test(`${path}: only its owner can read`, async () => {
     await assertSucceeds(getDoc(doc(client(), path)));
@@ -185,6 +204,19 @@ test('profile names can change without changing protected fields', async () => {
   assert.equal((await getDoc(doc(client(), 'passengers/alice'))).data().trustScore, 15);
   await assertFails(updateDoc(doc(client(), 'passengers/alice'), { email: 'other@example.com' }));
   await assertFails(deleteDoc(doc(client(), 'passengers/alice')));
+});
+
+test('passengers can pick an avatar preset, and only a preset id', async () => {
+  const ref = doc(client(), 'passengers/alice');
+  await assertSucceeds(updateDoc(ref, { avatar: 'w03' }));
+  await assertSucceeds(updateDoc(ref, { avatar: 'm08' }));
+  for (const avatar of ['w09', 'x01', 'https://example.com/me.png', '', 3, null]) {
+    await assertFails(updateDoc(ref, { avatar }));
+  }
+  await assertFails(updateDoc(doc(client('bob'), 'passengers/alice'), { avatar: 'w01' }));
+  await assertFails(setDoc(doc(client('new'), 'passengers/new'), {
+    displayName: 'New Passenger', email: 'new@example.com', createdAt: serverTimestamp(), avatar: 'w01',
+  }));
 });
 
 test('signup rejects false email, blank name, missing fields, and forged timestamp', async () => {

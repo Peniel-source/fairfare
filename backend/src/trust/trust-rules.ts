@@ -20,3 +20,12 @@ export function afterVerified(score: unknown): number {
 export function afterRejected(score: unknown): number {
   return clampTrust(currentTrust(score) + REJECTED_DELTA);
 }
+
+// Avatar the passenger picked in the app (a preset id such as 'w03'); the
+// security rules allow the same pattern. Anything else is not copied to the
+// public leaderboard.
+const AVATAR_ID = /^[wm]0[1-8]$/;
+
+export function publicAvatar(value: unknown): string | null {
+  return typeof value === 'string' && AVATAR_ID.test(value) ? value : null;
+}

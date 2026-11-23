@@ -16,6 +16,17 @@ void main() {
       expect(authRedirect(const AsyncLoading(), '/home/wallet'), isNull);
     });
 
+    test('the splash is never redirected; it moves on by itself', () {
+      for (final auth in const [
+        AsyncLoading<AuthUser?>(),
+        AsyncData<AuthUser?>(null),
+        AsyncData<AuthUser?>(unverified),
+        AsyncData<AuthUser?>(verified),
+      ]) {
+        expect(authRedirect(auth, kSplashRoute), isNull);
+      }
+    });
+
     test('signed out: public routes allowed, private routes go to Landing', () {
       const out = AsyncData<AuthUser?>(null);
       for (final route in kPublicRoutes) {

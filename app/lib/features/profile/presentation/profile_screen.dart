@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/formatters.dart';
+import '../../../shared/widgets/user_avatar.dart';
 import '../domain/entities/passenger.dart';
+import 'avatar_picker_sheet.dart';
 import 'badge_grid.dart';
 import 'edit_display_name_dialog.dart';
 import 'leaderboard_list.dart';
@@ -90,17 +91,50 @@ class _ProfileHeader extends StatelessWidget {
     }
   }
 
+  Future<void> _chooseAvatar(BuildContext context) async {
+    final saved = await showAvatarPicker(
+      context,
+      currentAvatar: passenger.avatar,
+      name: passenger.displayName,
+    );
+    if (saved && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Avatar updated')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
 
     return Row(
       children: [
-        CircleAvatar(
-          radius: 32,
-          child: Text(
-            Formatters.initials(passenger.displayName),
-            style: text.titleLarge,
+        Semantics(
+          button: true,
+          label: 'Choose your avatar',
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => _chooseAvatar(context),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                UserAvatar(
+                  avatar: passenger.avatar,
+                  name: passenger.displayName,
+                  radius: 32,
+                ),
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: CircleAvatar(
+                    radius: 12,
+                    backgroundColor: scheme.primary,
+                    child: Icon(Icons.edit, size: 14, color: scheme.onPrimary),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: AppSpacing.lg),
@@ -118,6 +152,15 @@ class _ProfileHeader extends StatelessWidget {
                 style: text.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (passenger.avatar == null)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton(
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => _chooseAvatar(context),
+                    child: const Text('Choose your avatar'),
+                  ),
+                ),
             ],
           ),
         ),

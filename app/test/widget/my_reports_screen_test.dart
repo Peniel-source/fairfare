@@ -1,7 +1,13 @@
+import '../fakes/fake_data_overrides.dart';
+
 import 'package:fairfare/core/theme/app_theme.dart';
-import 'package:fairfare/features/auth/data/fake_auth_repository.dart';
+
+import '../fakes/fake_auth_repository.dart';
+
 import 'package:fairfare/features/auth/presentation/auth_providers.dart';
-import 'package:fairfare/features/report/data/fake_report_repository.dart';
+
+import '../fakes/fake_report_repository.dart';
+
 import 'package:fairfare/features/report/domain/entities/report.dart';
 import 'package:fairfare/features/report/presentation/my_reports_screen.dart';
 import 'package:fairfare/features/report/presentation/report_providers.dart';
@@ -23,6 +29,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...fakeDataOverrides(),
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
           reportRepositoryProvider.overrideWithValue(reports),
           ...overrides,
@@ -114,6 +121,7 @@ void main() {
     await pumpMyReports(
       tester,
       overrides: [
+        ...fakeDataOverrides(),
         myReportsProvider.overrideWith((ref) => Stream.value(const <Report>[])),
       ],
     );

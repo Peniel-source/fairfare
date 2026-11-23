@@ -55,8 +55,4 @@ class AppConstants {
   /// passenger cannot type the wrong payee or amount.
   static const String passDialCode =
       '*182*8*1*$passMerchantCode*$passPriceRwf#';
-
-  /// Toggle between fake repositories (true) and real Firestore repositories (false).
-  /// Flip this to false in Phase 2 when real data wiring is ready.
-  static const bool useFakeData = true;
 }

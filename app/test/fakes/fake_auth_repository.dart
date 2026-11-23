@@ -1,8 +1,8 @@
 // Fake auth repository that returns sample data for UI development.
 import 'dart:async';
 
-import '../domain/entities/auth_user.dart';
-import '../domain/repositories/auth_repository.dart';
+import 'package:fairfare/features/auth/domain/entities/auth_user.dart';
+import 'package:fairfare/features/auth/domain/repositories/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
   AuthUser? _currentUser;

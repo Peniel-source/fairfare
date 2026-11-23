@@ -2,14 +2,18 @@
 import 'dart:async';
 
 import 'package:fairfare/core/theme/app_theme.dart';
-import 'package:fairfare/features/corridors/data/fake_corridor_repository.dart';
+
+import '../fakes/fake_corridor_repository.dart';
+
 import 'package:fairfare/features/corridors/domain/entities/corridor.dart';
 import 'package:fairfare/features/corridors/domain/entities/corridor_stats.dart';
 import 'package:fairfare/features/corridors/domain/repositories/corridor_repository.dart';
 import 'package:fairfare/features/corridors/presentation/corridor_providers.dart';
 import 'package:fairfare/features/corridors/presentation/corridors_screen.dart';
 import 'package:fairfare/features/profile/presentation/profile_providers.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
+
+import '../fakes/fake_settings_repository.dart';
+
 import 'package:fairfare/features/settings/presentation/settings_providers.dart';
 import 'package:fairfare/shared/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
@@ -43,9 +47,9 @@ class TestCorridorRepository implements CorridorRepository {
 void main() {
   //puts the screen on a tall phone so every card is built
   Future<void> pumpScreen(
-      WidgetTester tester,
-      CorridorRepository repository,
-      ) async {
+    WidgetTester tester,
+    CorridorRepository repository,
+  ) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -81,8 +85,8 @@ void main() {
   });
 
   testWidgets('shows the empty message when there are no routes', (
-      tester,
-      ) async {
+    tester,
+  ) async {
     await pumpScreen(tester, TestCorridorRepository());
     await tester.pumpAndSettle();
 
@@ -103,8 +107,8 @@ void main() {
   });
 
   testWidgets('typing an area that does not exist shows the empty message', (
-      tester,
-      ) async {
+    tester,
+  ) async {
     await pumpScreen(tester, FakeCorridorRepository());
     await tester.pumpAndSettle();
 

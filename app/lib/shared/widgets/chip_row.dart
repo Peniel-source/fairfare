@@ -25,7 +25,8 @@ class ChipRow extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: corridors.length,
-        separatorBuilder: (context, index) => const SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final corridor = corridors[index];
           return ChoiceChip(

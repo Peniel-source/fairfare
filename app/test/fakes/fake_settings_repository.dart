@@ -1,6 +1,6 @@
 // Fake settings repository that stores data in memory.
-import '../domain/entities/app_settings.dart';
-import '../domain/repositories/settings_repository.dart';
+import 'package:fairfare/features/settings/domain/entities/app_settings.dart';
+import 'package:fairfare/features/settings/domain/repositories/settings_repository.dart';
 
 class FakeSettingsRepository implements SettingsRepository {
   AppSettings _settings = const AppSettings();

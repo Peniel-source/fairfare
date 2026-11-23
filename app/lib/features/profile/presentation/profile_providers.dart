@@ -51,13 +51,49 @@ class EditDisplayNameController extends AutoDisposeAsyncNotifier<void> {
 
   /// Returns true when the name was saved.
   Future<bool> save(String name) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(updateDisplayNameProvider).call(name),
-    );
-    return !state.hasError;
+    // Stay alive until the write finishes, even if the dialog is closed
+    // meanwhile; otherwise setting state after disposal throws.
+    final link = ref.keepAlive();
+    try {
+      state = const AsyncLoading();
+      final result = await AsyncValue.guard(
+        () => ref.read(updateDisplayNameProvider).call(name),
+      );
+      state = result;
+      return !result.hasError;
+    } finally {
+      link.close();
+    }
   }
 }
+
+/// State of the "save avatar" action in the avatar picker.
+class ChooseAvatarController extends AutoDisposeAsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  /// Returns true when the avatar was saved.
+  Future<bool> save(String avatarId) async {
+    // Stay alive until the write finishes, even if the sheet is closed
+    // meanwhile; otherwise setting state after disposal throws.
+    final link = ref.keepAlive();
+    try {
+      state = const AsyncLoading();
+      final result = await AsyncValue.guard(
+        () => ref.read(profileRepositoryProvider).updateAvatar(avatarId),
+      );
+      state = result;
+      return !result.hasError;
+    } finally {
+      link.close();
+    }
+  }
+}
+
+final chooseAvatarControllerProvider =
+    AsyncNotifierProvider.autoDispose<ChooseAvatarController, void>(
+      ChooseAvatarController.new,
+    );
 
 final editDisplayNameControllerProvider =
     AsyncNotifierProvider.autoDispose<EditDisplayNameController, void>(
