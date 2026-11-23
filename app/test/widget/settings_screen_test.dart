@@ -7,7 +7,6 @@ import 'package:fairfare/features/auth/domain/entities/auth_user.dart';
 import 'package:fairfare/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fairfare/features/auth/presentation/auth_providers.dart';
 import 'package:fairfare/features/report/domain/entities/report_enums.dart';
-import 'package:fairfare/features/settings/data/fake_settings_repository.dart';
 
 import '../fakes/fake_settings_repository.dart';
 
