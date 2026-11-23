@@ -2,7 +2,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../auth/presentation/auth_providers.dart';
 import '../data/fake_report_repository.dart';
+import '../data/report_repository_impl.dart';
 import '../domain/entities/report.dart';
 import '../domain/repositories/report_repository.dart';
 import '../domain/usecases/submit_report.dart';
@@ -14,12 +16,13 @@ final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   if (AppConstants.useFakeData) {
     return FakeReportRepository();
   }
-  // TODO(C1): return ReportRepositoryImpl() when real Firestore wiring is ready.
-  throw UnimplementedError('ReportRepositoryImpl not yet implemented');
+  return ReportRepositoryImpl();
 });
 
 /// Stream of the current passenger's reports.
 final myReportsProvider = StreamProvider<List<Report>>((ref) {
+  // Listen again when the passenger signs in or out
+  ref.watch(authStateProvider.select((auth) => auth.value?.id));
   return ref.watch(reportRepositoryProvider).watchMine();
 });
 
